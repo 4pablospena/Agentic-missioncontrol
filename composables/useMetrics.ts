@@ -1,3 +1,5 @@
+import type { Ref } from 'vue'
+import { readonly, ref, watch } from 'vue'
 import type {
   ErrorSeverityMetric,
   ModelUsageMetric,

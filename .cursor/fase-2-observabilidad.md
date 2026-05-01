@@ -398,15 +398,15 @@ Pruebas recomendadas:
 
 La fase se considera terminada cuando:
 
-- [ ] El dashboard muestra metricas principales en vivo.
-- [ ] El monitor de agentes refleja cambios de estado.
-- [ ] El log viewer filtra por agente, nivel, texto y fecha.
-- [ ] Las alertas aparecen con severidad y pueden reconocerse.
-- [ ] Los graficos reciben datos tipados y normalizados.
-- [ ] El timeline muestra eventos por sesion.
-- [ ] No hay `fetch` directo fuera de servicios.
-- [ ] No hay `any`.
-- [ ] Las views solo orquestan composables.
-- [ ] Los componentes son presentacionales.
-- [ ] Cada composable expone una interfaz pequena y clara.
+- [x] El dashboard muestra metricas principales en vivo.
+- [x] El monitor de agentes refleja cambios de estado.
+- [x] El log viewer filtra por agente, nivel, texto y fecha.
+- [x] Las alertas aparecen con severidad y pueden reconocerse.
+- [x] Los graficos reciben datos tipados y normalizados.
+- [x] El timeline muestra eventos por sesion.
+- [x] No hay `fetch` directo fuera de servicios.
+- [x] No hay `any`.
+- [x] Las views solo orquestan composables.
+- [x] Los componentes son presentacionales.
+- [x] Cada composable expone una interfaz pequena y clara.
 

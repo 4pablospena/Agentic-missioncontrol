@@ -148,7 +148,7 @@ async function addSampleLog() {
           </div>
         </template>
 
-        <LogFilters
+        <LogsLogFilters
           v-model="filters"
           :agent-options="agentOptions"
           class="mb-6"
@@ -165,7 +165,7 @@ async function addSampleLog() {
           class="mb-4"
         />
 
-        <LogViewer :logs="logs" :pending="pending" />
+        <LogsLogViewer :logs="logs" :pending="pending" />
       </UCard>
     </template>
   </UDashboardPanel>

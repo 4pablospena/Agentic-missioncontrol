@@ -1,11 +1,19 @@
 /** @vitest-environment happy-dom */
 import { mount } from '@vue/test-utils'
+import { axe } from 'vitest-axe'
 import { describe, expect, it } from 'vitest'
 import LogFilters from '../components/logs/LogFilters.vue'
 
 const stubs = {
-  UFormField: { template: '<div><slot /></div>', props: ['label'] },
-  UInput: { template: '<input disabled />' },
+  UFormField: {
+    props: ['label'],
+    template:
+      '<label class="flex flex-col gap-1"><span>{{ label }}</span><slot /></label>',
+  },
+  UInput: {
+    props: ['modelValue'],
+    template: '<input type="text" disabled :value="modelValue" />',
+  },
   UButton: {
     props: ['label'],
     template:
@@ -25,5 +33,21 @@ describe('LogFilters', () => {
     expect(applyBtn).toBeTruthy()
     await applyBtn!.trigger('click')
     expect(w.emitted('apply')).toBeTruthy()
+  })
+
+  it('has no automated axe violations (stubbed UI primitives)', async () => {
+    const host = document.createElement('main')
+    document.body.append(host)
+    const w = mount(LogFilters, {
+      attachTo: host,
+      props: {
+        modelValue: { query: 'error', level: 'warn' },
+        agentOptions: [{ label: 'Agent A', value: 'a1' }],
+      },
+      global: { stubs },
+    })
+    expect(await axe(host)).toHaveNoViolations()
+    w.unmount()
+    host.remove()
   })
 })

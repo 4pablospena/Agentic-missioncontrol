@@ -1,15 +1,5 @@
-import { z } from 'zod'
+import { logsQuerySchema } from '../utils/logs-query-schema'
 import { listLogs } from '../services/logger.server'
-
-const logsQuerySchema = z.object({
-  agentId: z.string().optional(),
-  level: z.enum(['debug', 'info', 'warn', 'error']).optional(),
-  query: z.string().optional(),
-  from: z.string().optional(),
-  to: z.string().optional(),
-  sessionId: z.string().optional(),
-  limit: z.coerce.number().min(1).max(500).optional(),
-})
 
 export default defineEventHandler(async (event) => {
   await requireUserSession(event)

@@ -1,3 +1,5 @@
+import type { Ref } from 'vue'
+import { readonly, ref, watch } from 'vue'
 import type { AgentSummary } from '~/models/agent'
 import { agentToSummary } from '~/models/agent'
 import type { SendAgentCommandPayload } from '~/models/openclaw'

@@ -212,7 +212,7 @@ onMounted(() => {
               Recent logs
             </h2>
           </template>
-          <LogViewer :logs="recentLogs" :pending="logsPending" />
+          <LogsLogViewer :logs="recentLogs" :pending="logsPending" />
         </UCard>
 
         <UCard>
