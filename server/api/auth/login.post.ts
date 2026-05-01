@@ -20,14 +20,24 @@ export default defineEventHandler(async (event) => {
     passwordHash?: string
   }
 
+  /** Prefer Nitro runtimeConfig; fall back to process.env (production Nitro may not merge nested mcAuth from env reliably). */
   const expectedEmail = String(
-    mc.email || process.env.MISSION_CONTROL_OPERATOR_EMAIL || '',
+    mc.email?.trim()
+      || process.env.NUXT_MC_AUTH_EMAIL?.trim()
+      || process.env.MISSION_CONTROL_OPERATOR_EMAIL?.trim()
+      || '',
   ).trim()
   const plainPassword = String(
-    mc.password || process.env.MISSION_CONTROL_OPERATOR_PASSWORD || '',
+    mc.password?.trim()
+      || process.env.NUXT_MC_AUTH_PASSWORD
+      || process.env.MISSION_CONTROL_OPERATOR_PASSWORD
+      || '',
   )
   const passwordHash = String(
-    mc.passwordHash || process.env.MISSION_CONTROL_OPERATOR_PASSWORD_HASH || '',
+    mc.passwordHash?.trim()
+      || process.env.NUXT_MC_AUTH_PASSWORD_HASH?.trim()
+      || process.env.MISSION_CONTROL_OPERATOR_PASSWORD_HASH?.trim()
+      || '',
   )
 
   if (!expectedEmail || (!plainPassword.trim() && !passwordHash.trim())) {
