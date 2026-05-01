@@ -74,6 +74,11 @@ export async function listLogs(options: ListLogsOptions = {}): Promise<LogEntry[
     )
   }
 
+  if (options.taskId?.trim()) {
+    const tid = options.taskId.trim()
+    conditions.push(sql`json_extract(${logs.metadataJson}, '$.taskId') = ${tid}`)
+  }
+
   const qb = db.select().from(logs).orderBy(desc(logs.createdAt)).limit(limit)
   const rows = conditions.length > 0 ? qb.where(and(...conditions)).all() : qb.all()
 

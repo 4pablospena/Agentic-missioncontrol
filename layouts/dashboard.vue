@@ -32,6 +32,13 @@ const links = [[{
     open.value = false
   },
 }, {
+  label: 'Scheduler',
+  icon: 'i-lucide-clock',
+  to: '/scheduler',
+  onSelect: () => {
+    open.value = false
+  },
+}, {
   label: 'Memory',
   icon: 'i-lucide-database',
   to: '/memory',

@@ -8,5 +8,6 @@ export const logsQuerySchema = z.object({
   from: z.string().optional(),
   to: z.string().optional(),
   sessionId: z.string().optional(),
+  taskId: z.string().optional(),
   limit: z.coerce.number().min(1).max(500).optional(),
 })

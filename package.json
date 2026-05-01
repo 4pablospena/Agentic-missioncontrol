@@ -16,6 +16,7 @@
   "dependencies": {
     "@nuxt/ui": "^4.7.1",
     "better-sqlite3": "^11.8.1",
+    "croner": "^10.0.1",
     "drizzle-orm": "^0.38.4",
     "nuxt": "^4.4.4",
     "nuxt-auth-utils": "^0.5.29",

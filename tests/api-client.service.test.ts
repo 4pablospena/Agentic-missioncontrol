@@ -35,4 +35,14 @@ describe('createApiClient', () => {
       }),
     )
   })
+
+  it('DELETE sends method DELETE', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true })
+    const client = createApiClient(fetchMock as Parameters<typeof createApiClient>[0], '')
+    await client.delete('/api/schedules/x')
+    expect(fetchMock).toHaveBeenCalledWith(
+      '/api/schedules/x',
+      expect.objectContaining({ method: 'DELETE' }),
+    )
+  })
 })

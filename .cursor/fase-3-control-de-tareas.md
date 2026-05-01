@@ -443,18 +443,18 @@ Pruebas de integracion recomendadas:
 
 La fase se considera terminada cuando:
 
-- [ ] Se pueden listar tareas por estado.
-- [ ] Se puede crear una tarea manual.
-- [ ] Se puede asignar una tarea a un agente.
-- [ ] Se puede ver progreso en tiempo real.
-- [ ] Se puede cancelar una tarea valida.
-- [ ] Se puede reintentar una tarea fallida.
-- [ ] Existe vista de detalle con historial.
-- [ ] Existe scheduler con cron validado.
-- [ ] Cada accion importante genera log.
-- [ ] No hay `fetch` directo fuera de servicios.
-- [ ] No hay `any`.
-- [ ] Los componentes solo reciben props y emiten eventos.
-- [ ] Las views no contienen logica de negocio.
-- [ ] Los composables aceptan servicios mockeables.
+- [x] Se pueden listar tareas por estado.
+- [x] Se puede crear una tarea manual.
+- [x] Se puede asignar una tarea a un agente.
+- [x] Se puede ver progreso en tiempo real.
+- [x] Se puede cancelar una tarea valida.
+- [x] Se puede reintentar una tarea fallida.
+- [x] Existe vista de detalle con historial.
+- [x] Existe scheduler con cron validado.
+- [x] Cada accion importante genera log.
+- [x] No hay `fetch` directo fuera de servicios.
+- [x] No hay `any`.
+- [x] Los componentes solo reciben props y emiten eventos.
+- [x] Las views no contienen logica de negocio.
+- [x] Los composables aceptan servicios mockeables.
 

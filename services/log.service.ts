@@ -27,6 +27,8 @@ function appendParams(params: URLSearchParams, filters: LogFilters & { limit?: n
     params.set('to', filters.to)
   if (filters.sessionId)
     params.set('sessionId', filters.sessionId)
+  if (filters.taskId)
+    params.set('taskId', filters.taskId)
   if (filters.limit != null)
     params.set('limit', String(filters.limit))
 }

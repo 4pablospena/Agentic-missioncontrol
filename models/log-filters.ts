@@ -9,4 +9,6 @@ export interface LogFilters {
   to?: string
   /** Restrict to logs whose metadata JSON contains this session id. */
   sessionId?: string
+  /** Restrict to logs whose metadata JSON contains this task id. */
+  taskId?: string
 }

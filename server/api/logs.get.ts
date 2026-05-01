@@ -21,6 +21,7 @@ export default defineEventHandler(async (event) => {
     from: q.from,
     to: q.to,
     sessionId: q.sessionId,
+    taskId: q.taskId,
     limit: q.limit,
   })
 })

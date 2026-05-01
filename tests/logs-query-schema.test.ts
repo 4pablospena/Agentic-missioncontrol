@@ -28,6 +28,7 @@ describe('logsQuerySchema', () => {
       from: '2026-01-01',
       to: '2026-01-02',
       sessionId: 'sess',
+      taskId: 'task-1',
       limit: 50,
     })
     expect(r.success).toBe(true)

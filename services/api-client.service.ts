@@ -12,6 +12,7 @@ export interface ApiClient {
     payload: TPayload,
     opts?: FetchOptions<'json'>,
   ): Promise<TResponse>
+  delete<TResponse>(path: string, opts?: FetchOptions<'json'>): Promise<TResponse>
 }
 
 export function createApiClient(fetchImpl: $Fetch, basePath = ''): ApiClient {
@@ -42,6 +43,9 @@ export function createApiClient(fetchImpl: $Fetch, basePath = ''): ApiClient {
         method: 'PATCH',
         body: payload,
       })
+    },
+    delete<TResponse>(path: string, opts?: FetchOptions<'json'>) {
+      return fetchImpl<TResponse>(url(path), { ...opts, method: 'DELETE' })
     },
   }
 }
