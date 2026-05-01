@@ -1,18 +1,48 @@
 <script setup lang="ts">
+import type { AuthFormField, FormSubmitEvent } from '@nuxt/ui'
+import { z } from 'zod'
+
 definePageMeta({ layout: 'public' })
 
 const auth = useAuthSession()
 
-const email = ref('')
-const password = ref('')
+const fields: AuthFormField[] = [
+  {
+    name: 'email',
+    type: 'email',
+    label: 'Email',
+    placeholder: 'operator@example.com',
+    required: true,
+    autocomplete: 'username',
+  },
+  {
+    name: 'password',
+    type: 'password',
+    label: 'Password',
+    required: true,
+    autocomplete: 'current-password',
+  },
+]
+
+/** Matches server/api/auth/login.post.ts (min 1). Tighten to min(8) for stricter UX later. */
+const loginFormSchema = z.object({
+  email: z.string().trim().email('Invalid email'),
+  password: z.string().min(1, 'Password is required'),
+})
+
+type LoginFormOutput = z.output<typeof loginFormSchema>
+
 const errorMsg = ref('')
 const pending = ref(false)
 
-async function onSubmit() {
+async function onSubmit(payload: FormSubmitEvent<LoginFormOutput>) {
   errorMsg.value = ''
   pending.value = true
   try {
-    await auth.login({ email: email.value.trim(), password: password.value })
+    await auth.login({
+      email: payload.data.email.trim(),
+      password: payload.data.password,
+    })
     await navigateTo('/')
   }
   catch (e: unknown) {
@@ -27,54 +57,36 @@ async function onSubmit() {
 </script>
 
 <template>
-  <UCard class="w-full max-w-md">
-    <template #header>
-      <div class="space-y-1">
-        <h1 class="text-highlighted text-lg font-semibold">
-          Sign in
-        </h1>
-        <p class="text-muted text-sm">
+  <UPageCard class="w-full max-w-md">
+    <UAuthForm
+      :schema="loginFormSchema"
+      title="Login"
+      description="Enter your credentials to access your account."
+      icon="i-lucide-user"
+      :fields="fields"
+      :submit="{
+        label: 'Submit',
+        color: 'error',
+        variant: 'subtle',
+      }"
+      :loading="pending"
+      class="w-full"
+      @submit="onSubmit"
+    >
+      <template #validation>
+        <UAlert
+          v-if="errorMsg"
+          color="error"
+          variant="soft"
+          :title="errorMsg"
+        />
+      </template>
+
+      <template #footer>
+        <p class="text-muted text-center text-sm">
           OpenClaw Mission Control — operator session
         </p>
-      </div>
-    </template>
-
-    <form class="space-y-4" @submit.prevent="onSubmit">
-      <UAlert
-        v-if="errorMsg"
-        color="error"
-        variant="soft"
-        :title="errorMsg"
-      />
-
-      <UFormField label="Email">
-        <UInput
-          v-model="email"
-          type="email"
-          name="email"
-          autocomplete="username"
-          required
-          placeholder="operator@example.com"
-        />
-      </UFormField>
-
-      <UFormField label="Password">
-        <UInput
-          v-model="password"
-          type="password"
-          name="password"
-          autocomplete="current-password"
-          required
-        />
-      </UFormField>
-
-      <UButton
-        type="submit"
-        block
-        :loading="pending"
-      >
-        Continue
-      </UButton>
-    </form>
-  </UCard>
+      </template>
+    </UAuthForm>
+  </UPageCard>
 </template>
