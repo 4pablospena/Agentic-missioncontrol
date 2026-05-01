@@ -1,4 +1,23 @@
-import { sqliteTable, text } from 'drizzle-orm/sqlite-core'
+import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core'
+
+/** Phase 1 stub tables; auth remains env/session-based. No FK from logs.agent_id to avoid orphan rows in local DBs. */
+export const users = sqliteTable('users', {
+  id: text('id').primaryKey(),
+  email: text('email').notNull().unique(),
+  passwordHash: text('password_hash'),
+})
+
+export const agents = sqliteTable('agents', {
+  id: text('id').primaryKey(),
+  name: text('name').notNull(),
+  status: text('status').notNull(),
+  model: text('model').notNull(),
+  currentTaskId: text('current_task_id'),
+  tokenUsage: integer('token_usage').notNull().default(0),
+  lastSeenAt: text('last_seen_at'),
+  createdAt: text('created_at').notNull(),
+  updatedAt: text('updated_at').notNull(),
+})
 
 export const logs = sqliteTable('logs', {
   id: text('id').primaryKey(),
@@ -6,5 +25,20 @@ export const logs = sqliteTable('logs', {
   level: text('level').notNull(),
   message: text('message').notNull(),
   metadataJson: text('metadata_json'),
+  createdAt: text('created_at').notNull(),
+})
+
+export const realtimeEvents = sqliteTable('realtime_events', {
+  id: text('id').primaryKey(),
+  type: text('type').notNull(),
+  payloadJson: text('payload_json'),
+  createdAt: text('created_at').notNull(),
+})
+
+export const tasks = sqliteTable('tasks', {
+  id: text('id').primaryKey(),
+  agentId: text('agent_id'),
+  status: text('status').notNull(),
+  payloadJson: text('payload_json'),
   createdAt: text('created_at').notNull(),
 })

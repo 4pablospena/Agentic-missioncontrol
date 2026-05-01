@@ -1,3 +1,4 @@
+import { loginWithApiSession, logoutSession } from '~/composables/auth-session.logic'
 import { createApiClient } from '~/services/api-client.service'
 import type { LoginPayload, LoginResponse } from '~/models/auth'
 
@@ -11,16 +12,11 @@ export function useAuthSession() {
   )
 
   async function login(payload: LoginPayload): Promise<LoginResponse> {
-    const res = await apiClient.post<LoginPayload, LoginResponse>(
-      '/api/auth/login',
-      payload,
-    )
-    await session.fetch()
-    return res
+    return loginWithApiSession(session, apiClient, payload)
   }
 
   async function logout(): Promise<void> {
-    await session.clear()
+    return logoutSession(session)
   }
 
   return {

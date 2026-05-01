@@ -48,10 +48,10 @@ export async function listRecentLogs(limit = 50): Promise<LogEntry[]> {
     .limit(limit)
     .all()
 
-  return rows.map(mapRow)
+  return rows.map(mapLogRowToLogEntry)
 }
 
-function mapRow(row: (typeof logs)['$inferSelect']): LogEntry {
+export function mapLogRowToLogEntry(row: (typeof logs)['$inferSelect']): LogEntry {
   let metadata: Record<string, unknown> | undefined
   if (row.metadataJson) {
     try {

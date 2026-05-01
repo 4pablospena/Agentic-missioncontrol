@@ -4,6 +4,7 @@ export type MissionControlEventType =
   | 'agent.command.completed'
   | 'agent.command.failed'
   | 'log.created'
+  | 'task.status.changed'
   | 'system.health.changed'
 
 export interface MissionControlEvent<TPayload = Record<string, unknown>> {

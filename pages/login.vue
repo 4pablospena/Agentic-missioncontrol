@@ -24,10 +24,10 @@ const fields: AuthFormField[] = [
   },
 ]
 
-/** Matches server/api/auth/login.post.ts (min 1). Tighten to min(8) for stricter UX later. */
+/** Matches server/api/auth/login.post.ts (min 8). */
 const loginFormSchema = z.object({
   email: z.string().trim().email('Invalid email'),
-  password: z.string().min(1, 'Password is required'),
+  password: z.string().min(8, 'Password must be at least 8 characters'),
 })
 
 type LoginFormOutput = z.output<typeof loginFormSchema>
