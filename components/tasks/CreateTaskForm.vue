@@ -1,10 +1,22 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import type { CreateTaskPayload, TaskPriority } from '~/models/task'
 
 const props = defineProps<{
   agentOptions?: { label: string, value: string }[]
 }>()
+
+const priorityItems: { label: string, value: TaskPriority }[] = [
+  { label: 'Low', value: 'low' },
+  { label: 'Normal', value: 'normal' },
+  { label: 'High', value: 'high' },
+  { label: 'Critical', value: 'critical' },
+]
+
+const agentMenuItems = computed(() => [
+  { label: 'Unassigned', value: '' },
+  ...(props.agentOptions ?? []),
+])
 
 const emit = defineEmits<{
   submit: [payload: CreateTaskPayload]
@@ -73,42 +85,28 @@ function onSubmit() {
       </UFormField>
 
       <UFormField label="Priority">
-        <select
+        <USelectMenu
           v-model="priority"
-          class="border-default bg-default ring-default w-full rounded-md border px-3 py-2 text-sm ring"
-        >
-          <option value="low">
-            low
-          </option>
-          <option value="normal">
-            normal
-          </option>
-          <option value="high">
-            high
-          </option>
-          <option value="critical">
-            critical
-          </option>
-        </select>
+          :items="priorityItems"
+          value-key="value"
+          label-key="label"
+          placeholder="Priority"
+          :search-input="false"
+          class="w-full"
+        />
       </UFormField>
 
       <UFormField label="Agent (optional)">
-        <select
+        <USelectMenu
           v-if="props.agentOptions?.length"
           v-model="assignedAgentId"
-          class="border-default bg-default ring-default w-full rounded-md border px-3 py-2 text-sm ring"
-        >
-          <option value="">
-            Unassigned
-          </option>
-          <option
-            v-for="opt in props.agentOptions"
-            :key="opt.value"
-            :value="opt.value"
-          >
-            {{ opt.label }}
-          </option>
-        </select>
+          :items="agentMenuItems"
+          value-key="value"
+          label-key="label"
+          placeholder="Unassigned"
+          :search-input="false"
+          class="w-full"
+        />
         <UInput v-else v-model="assignedAgentId" placeholder="Agent id" class="w-full" />
       </UFormField>
 

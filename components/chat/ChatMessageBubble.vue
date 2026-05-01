@@ -18,7 +18,7 @@ const isUser = computed(() => props.message.role === 'user')
     <div
       class="max-w-[min(640px,85%)] rounded-lg px-3 py-2 text-sm shadow-sm"
       :class="isUser
-        ? 'bg-primary text-white'
+        ? 'bg-primary text-white ring-1 ring-black/15 ring-inset dark:ring-white/20'
         : 'bg-elevated text-default border-default border'"
     >
       <div class="text-[10px] font-medium uppercase opacity-70">

@@ -129,6 +129,11 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
 
   watch(selectedConversationId, () => void loadMessages())
 
+  async function refreshChat() {
+    await loadConversations()
+    await loadMessages()
+  }
+
   const eventsSource = options.events ?? useRealtimeEvents().events
   watch(
     eventsSource,
@@ -152,6 +157,7 @@ export function useAgentChat(options: UseAgentChatOptions = {}) {
     errorMsg: readonly(errorMsg),
     loadConversations,
     loadMessages,
+    refreshChat,
     sendMessage,
     selectConversation,
     startNewConversation,

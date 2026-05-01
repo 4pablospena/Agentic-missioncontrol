@@ -31,6 +31,7 @@ function mapSnapshotRow(row: typeof memorySnapshots.$inferSelect): MemorySnapsho
     agentId: row.agentId ?? undefined,
     itemCount: row.itemCount,
     createdAt: row.createdAt,
+    blobSizeBytes: Buffer.byteLength(row.blobJson, 'utf8'),
   }
 }
 

@@ -38,52 +38,120 @@ const sessionId = computed({
   set: (v: string) => patch({ sessionId: v || undefined }),
 })
 
-const from = computed({
-  get: () => props.modelValue.from ?? '',
-  set: (v: string) => patch({ from: v || undefined }),
+function isoToDayInput(iso: string): string {
+  const d = new Date(iso)
+  if (Number.isNaN(d.getTime()))
+    return ''
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${y}-${m}-${day}`
+}
+
+const fromDay = computed({
+  get() {
+    const raw = props.modelValue.from?.trim()
+    return raw ? isoToDayInput(raw) : ''
+  },
+  set(v: string) {
+    const t = v.trim()
+    if (!t) {
+      patch({ from: undefined })
+      return
+    }
+    const start = new Date(`${t}T00:00:00`)
+    patch({ from: Number.isNaN(start.getTime()) ? undefined : start.toISOString() })
+  },
 })
 
-const to = computed({
-  get: () => props.modelValue.to ?? '',
-  set: (v: string) => patch({ to: v || undefined }),
+const toDay = computed({
+  get() {
+    const raw = props.modelValue.to?.trim()
+    return raw ? isoToDayInput(raw) : ''
+  },
+  set(v: string) {
+    const t = v.trim()
+    if (!t) {
+      patch({ to: undefined })
+      return
+    }
+    const end = new Date(`${t}T23:59:59.999`)
+    patch({ to: Number.isNaN(end.getTime()) ? undefined : end.toISOString() })
+  },
 })
+
+function presetDays(days: number) {
+  const to = new Date()
+  const from = new Date(to.getTime() - days * 86_400_000)
+  patch({ from: from.toISOString(), to: to.toISOString() })
+}
+
+function clearDateRange() {
+  patch({ from: undefined, to: undefined })
+}
+
+const agentMenuItems = computed(() => [
+  { label: 'Any agent', value: '' },
+  ...props.agentOptions,
+])
 </script>
 
 <template>
   <div class="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
     <UFormField label="Agent">
-      <select
+      <USelectMenu
         v-model="agentSelect"
-        class="border-default bg-default ring-default w-full rounded-md border px-3 py-2 text-sm ring"
+        :items="agentMenuItems"
+        value-key="value"
+        label-key="label"
+        placeholder="Any agent"
+        :search-input="false"
+        class="w-full"
         data-testid="memory-filter-agent"
-      >
-        <option value="">
-          Any agent
-        </option>
-        <option v-for="opt in agentOptions" :key="opt.value" :value="opt.value">
-          {{ opt.label }}
-        </option>
-      </select>
+      />
     </UFormField>
     <UFormField label="Session id">
       <UInput v-model="sessionId" placeholder="Optional" data-testid="memory-filter-session" />
     </UFormField>
     <UFormField label="Source">
-      <select
+      <USelectMenu
         v-model="sourceSelect"
-        class="border-default bg-default ring-default w-full rounded-md border px-3 py-2 text-sm ring"
+        :items="sourceOptions"
+        value-key="value"
+        label-key="label"
+        placeholder="Any source"
+        :search-input="false"
+        class="w-full"
         data-testid="memory-filter-source"
-      >
-        <option v-for="opt in sourceOptions" :key="String(opt.value)" :value="opt.value">
-          {{ opt.label }}
-        </option>
-      </select>
+      />
     </UFormField>
-    <UFormField label="From (ISO date)">
-      <UInput v-model="from" placeholder="2026-01-01T00:00:00.000Z" data-testid="memory-filter-from" />
+    <div class="col-span-full flex flex-wrap items-center gap-2">
+      <span class="text-muted text-xs font-medium">Created range</span>
+      <UButton size="xs" variant="ghost" label="Last 7 days" @click="presetDays(7)" />
+      <UButton size="xs" variant="ghost" label="Last 30 days" @click="presetDays(30)" />
+      <UButton size="xs" variant="ghost" label="Clear dates" @click="clearDateRange()" />
+    </div>
+    <UFormField
+      label="From"
+      description="Calendar uses local day; filters apply ISO timestamps."
+    >
+      <UInput
+        v-model="fromDay"
+        type="date"
+        class="w-full"
+        data-testid="memory-filter-from"
+      />
     </UFormField>
-    <UFormField label="To (ISO date)">
-      <UInput v-model="to" placeholder="2026-12-31T23:59:59.999Z" data-testid="memory-filter-to" />
+    <UFormField
+      label="To"
+      description="End of selected local day."
+    >
+      <UInput
+        v-model="toDay"
+        type="date"
+        class="w-full"
+        data-testid="memory-filter-to"
+      />
     </UFormField>
   </div>
 </template>

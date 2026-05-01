@@ -1,10 +1,14 @@
 <script setup lang="ts">
 import type { Conversation } from '~/models/chat'
 
-defineProps<{
-  conversations: Conversation[]
-  selectedId: string | null
-}>()
+withDefaults(
+  defineProps<{
+    conversations: Conversation[]
+    selectedId: string | null
+    disabled?: boolean
+  }>(),
+  { disabled: false },
+)
 
 const emit = defineEmits<{
   select: [id: string]
@@ -19,6 +23,7 @@ const emit = defineEmits<{
       :color="selectedId === c.id ? 'primary' : 'neutral'"
       :variant="selectedId === c.id ? 'soft' : 'ghost'"
       class="h-auto justify-start py-2"
+      :disabled="disabled"
       @click="emit('select', c.id)"
     >
       <div class="flex w-full flex-col items-start gap-0.5 text-left">

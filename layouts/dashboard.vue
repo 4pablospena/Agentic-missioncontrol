@@ -3,55 +3,51 @@ import type { NavigationMenuItem } from '@nuxt/ui'
 
 const open = ref(false)
 
+function closeMobileNav() {
+  open.value = false
+}
+
 const links = [[{
   label: 'Dashboard',
   icon: 'i-lucide-layout-dashboard',
   to: '/',
-  onSelect: () => {
-    open.value = false
-  },
+  onSelect: closeMobileNav,
 }, {
   label: 'Agents',
   icon: 'i-lucide-bot',
   to: '/agents',
-  onSelect: () => {
-    open.value = false
-  },
+  onSelect: closeMobileNav,
 }, {
   label: 'Logs',
   icon: 'i-lucide-scroll-text',
   to: '/logs',
-  onSelect: () => {
-    open.value = false
-  },
+  onSelect: closeMobileNav,
 }, {
   label: 'Tasks',
   icon: 'i-lucide-square-kanban',
   to: '/tasks',
-  onSelect: () => {
-    open.value = false
-  },
+  onSelect: closeMobileNav,
 }, {
   label: 'Scheduler',
   icon: 'i-lucide-clock',
   to: '/scheduler',
-  onSelect: () => {
-    open.value = false
-  },
+  onSelect: closeMobileNav,
 }, {
-  label: 'Memory',
-  icon: 'i-lucide-database',
-  to: '/memory',
-  onSelect: () => {
-    open.value = false
-  },
-}, {
-  label: 'Chat',
-  icon: 'i-lucide-message-square',
-  to: '/chat',
-  onSelect: () => {
-    open.value = false
-  },
+  label: 'Context',
+  icon: 'i-lucide-layers',
+  type: 'trigger' as const,
+  defaultOpen: true,
+  children: [{
+    label: 'Memory',
+    icon: 'i-lucide-database',
+    to: '/memory',
+    onSelect: closeMobileNav,
+  }, {
+    label: 'Chat',
+    icon: 'i-lucide-message-square',
+    to: '/chat',
+    onSelect: closeMobileNav,
+  }],
 }], [{
   label: 'OpenClaw docs',
   icon: 'i-lucide-book-open',
@@ -64,11 +60,36 @@ const links = [[{
   target: '_blank',
 }]] satisfies NavigationMenuItem[][]
 
-const groups = computed(() => [{
-  id: 'links',
-  label: 'Go to',
-  items: links.flat(),
-}])
+function flattenPrimaryNav(items: NavigationMenuItem[]): NavigationMenuItem[] {
+  return items.flatMap((item) => {
+    if (item.children?.length)
+      return item.children as NavigationMenuItem[]
+    return [item]
+  })
+}
+
+const groups = computed(() => {
+  const primary = flattenPrimaryNav(links[0]).map((item) => {
+    if (item.to === '/memory') {
+      return {
+        ...item,
+        description: 'Semantic search, embeddings, cosine similarity, vector memory, snapshots',
+      }
+    }
+    if (item.to === '/chat') {
+      return {
+        ...item,
+        description: 'Agent conversations, threads, messaging, realtime chat',
+      }
+    }
+    return item
+  })
+  return [{
+    id: 'links',
+    label: 'Go to',
+    items: [...primary, ...links[1]],
+  }]
+})
 </script>
 
 <template>

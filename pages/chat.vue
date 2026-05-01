@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { computed } from 'vue'
+
 definePageMeta({ layout: 'dashboard' })
 
 const { events, connected } = useRealtimeEvents()
@@ -12,14 +14,27 @@ const {
   pending,
   sending,
   errorMsg,
+  refreshChat,
   sendMessage,
   selectConversation,
   startNewConversation,
 } = useAgentChat({ events })
 
+const agentMenuItems = computed(() => [
+  { label: 'Select an agent…', value: '' },
+  ...agents.value.map(a => ({ label: `${a.name} (${a.id})`, value: a.id })),
+])
+
+const hasAgent = computed(() => !!String(agentId.value ?? '').trim())
+
 onMounted(async () => {
   await refreshAgents()
 })
+
+async function onRefreshChat() {
+  await refreshAgents()
+  await refreshChat()
+}
 </script>
 
 <template>
@@ -28,6 +43,18 @@ onMounted(async () => {
       <UDashboardNavbar title="Chat" :ui="{ right: 'gap-3' }">
         <template #leading>
           <UDashboardSidebarCollapse />
+        </template>
+        <template #right>
+          <UButton
+            icon="i-lucide-refresh-cw"
+            label="Refresh"
+            color="neutral"
+            variant="ghost"
+            size="sm"
+            :loading="pending"
+            data-testid="chat-refresh"
+            @click="onRefreshChat"
+          />
         </template>
       </UDashboardNavbar>
     </template>
@@ -56,34 +83,53 @@ onMounted(async () => {
           />
 
           <UFormField label="Agent" class="max-w-md">
-            <select
+            <USelectMenu
               v-model="agentId"
-              class="border-default bg-default ring-default w-full rounded-md border px-3 py-2 text-sm ring"
+              :items="agentMenuItems"
+              value-key="value"
+              label-key="label"
+              placeholder="Select an agent…"
+              :search-input="false"
+              class="w-full"
               data-testid="chat-agent-select"
-            >
-              <option value="">
-                Select an agent…
-              </option>
-              <option
-                v-for="a in agents"
-                :key="a.id"
-                :value="a.id"
-              >
-                {{ a.name }} ({{ a.id }})
-              </option>
-            </select>
+            />
           </UFormField>
 
-          <p class="text-muted mt-3 text-sm">
-            Uses the OpenClaw bridge (
-            <UKbd size="sm">
-              OPENCLAW_BRIDGE_MODE
-            </UKbd>
-            ). Mock replies include your message and context counts; the gateway path stays a stub until wired.
-          </p>
+          <UCollapsible class="mt-3">
+            <UButton
+              class="group"
+              label="How it works"
+              color="neutral"
+              variant="ghost"
+              trailing-icon="i-lucide-chevron-down"
+              :ui="{
+                trailingIcon: 'group-data-[state=open]:rotate-180 transition-transform duration-200',
+              }"
+            />
+
+            <template #content>
+              <p class="text-muted text-sm">
+                Uses the OpenClaw bridge (
+                <UKbd size="sm">
+                  OPENCLAW_BRIDGE_MODE
+                </UKbd>
+                ). Mock replies include your message and context counts; the gateway path stays a stub until wired.
+                See
+                <ULink
+                  to="https://docs.openclaw.ai/"
+                  target="_blank"
+                  class="text-primary font-medium underline"
+                >
+                  OpenClaw docs
+                </ULink>
+                for gateway setup.
+              </p>
+            </template>
+          </UCollapsible>
         </UCard>
 
         <AgentChat
+          :has-agent="hasAgent"
           :conversations="conversations"
           :messages="messages"
           :selected-conversation-id="selectedConversationId"

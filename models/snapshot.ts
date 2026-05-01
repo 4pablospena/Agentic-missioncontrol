@@ -8,6 +8,8 @@ export interface MemorySnapshot {
   agentId?: string
   itemCount: number
   createdAt: string
+  /** UTF-8 byte length of stored snapshot JSON blob (approx. download size). */
+  blobSizeBytes?: number
 }
 
 export interface ExportMemorySnapshotPayload {

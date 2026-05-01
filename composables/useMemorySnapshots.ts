@@ -70,6 +70,10 @@ export function useMemorySnapshots(options: UseMemorySnapshotsOptions = {}) {
     }
   }
 
+  async function fetchSnapshot(snapshotId: string) {
+    return resolveService().get(snapshotId)
+  }
+
   const eventsSource = options.events ?? useRealtimeEvents().events
   watch(
     eventsSource,
@@ -88,5 +92,6 @@ export function useMemorySnapshots(options: UseMemorySnapshotsOptions = {}) {
     refresh,
     exportSnapshot,
     importSnapshot,
+    fetchSnapshot,
   }
 }
