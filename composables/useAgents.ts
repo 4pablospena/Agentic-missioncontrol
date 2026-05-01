@@ -1,28 +1,31 @@
-import type { Agent } from '~/models/agent'
+import type { AgentSummary } from '~/models/agent'
+import { agentToSummary } from '~/models/agent'
 import type { SendAgentCommandPayload } from '~/models/openclaw'
+import type { MissionControlEvent } from '~/models/realtime'
+import { useMcConfig } from '~/composables/useMcConfig'
 import { createApiClient } from '~/services/api-client.service'
 import {
   createOpenClawAgentService,
   type OpenClawAgentService,
 } from '~/services/openclaw-agent.service'
 
-export interface UseOpenClawAgentsOptions {
+export interface UseAgentsOptions {
   agentService?: OpenClawAgentService
+  /** Defaults to `useRealtimeEvents().events` when omitted. */
+  events?: Ref<MissionControlEvent[]>
 }
 
-export function useOpenClawAgents(options: UseOpenClawAgentsOptions = {}) {
+export function useAgents(options: UseAgentsOptions = {}) {
   const { apiBase } = useMcConfig()
-  const agents = ref<Agent[]>([])
+  const agents = ref<AgentSummary[]>([])
   const health = ref<unknown>(null)
   const isLoading = ref(false)
   const error = ref<string | null>(null)
 
   function resolveService(): OpenClawAgentService {
-    if (options.agentService) {
+    if (options.agentService)
       return options.agentService
-    }
-    const reqFetch = useRequestFetch()
-    const client = createApiClient(reqFetch, apiBase.value)
+    const client = createApiClient(useRequestFetch(), apiBase.value)
     return createOpenClawAgentService(client)
   }
 
@@ -31,7 +34,8 @@ export function useOpenClawAgents(options: UseOpenClawAgentsOptions = {}) {
     error.value = null
     try {
       const service = resolveService()
-      agents.value = await service.listAgents()
+      const list = await service.listAgents()
+      agents.value = list.map(agentToSummary)
       health.value = await service.getHealth()
     }
     catch (e) {
@@ -46,9 +50,22 @@ export function useOpenClawAgents(options: UseOpenClawAgentsOptions = {}) {
     return resolveService().sendCommand(agentId, payload)
   }
 
-  async function getAgent(agentId: string) {
-    return resolveService().getAgent(agentId)
-  }
+  const eventsSource = options.events ?? useRealtimeEvents().events
+  watch(
+    eventsSource,
+    (list) => {
+      const last = list[list.length - 1]
+      if (!last)
+        return
+      if (
+        last.type === 'agent.status.changed'
+        || last.type === 'agent.tokens.changed'
+      ) {
+        void refresh()
+      }
+    },
+    { deep: true },
+  )
 
   return {
     agents: readonly(agents),
@@ -57,6 +74,5 @@ export function useOpenClawAgents(options: UseOpenClawAgentsOptions = {}) {
     error: readonly(error),
     refresh,
     sendCommand,
-    getAgent,
   }
 }

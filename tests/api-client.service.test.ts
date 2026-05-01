@@ -22,4 +22,17 @@ describe('createApiClient', () => {
       }),
     )
   })
+
+  it('PATCH sends JSON body', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({ alert: { id: '1' } })
+    const client = createApiClient(fetchMock as Parameters<typeof createApiClient>[0], '')
+    await client.patch('/api/alerts/x/acknowledge', {})
+    expect(fetchMock).toHaveBeenCalledWith(
+      '/api/alerts/x/acknowledge',
+      expect.objectContaining({
+        method: 'PATCH',
+        body: {},
+      }),
+    )
+  })
 })

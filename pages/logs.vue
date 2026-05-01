@@ -1,3 +1,102 @@
+<script setup lang="ts">
+import type { LogFilters } from '~/models/log-filters'
+
+definePageMeta({ layout: 'dashboard' })
+
+const route = useRoute()
+const router = useRouter()
+
+const { events, connected } = useRealtimeEvents()
+const {
+  logs,
+  filters,
+  pending,
+  errorMsg,
+  refresh,
+  resetFilters,
+  create,
+} = useLogs({ events })
+const { agents, refresh: refreshAgents } = useAgents({ events })
+
+function queryFromRoute(): LogFilters {
+  const q = route.query
+  const levelRaw = typeof q.level === 'string' ? q.level : undefined
+  const level
+    = levelRaw === 'debug'
+    || levelRaw === 'info'
+    || levelRaw === 'warn'
+    || levelRaw === 'error'
+      ? levelRaw
+      : undefined
+  return {
+    agentId: typeof q.agentId === 'string' ? q.agentId : undefined,
+    level,
+    query: typeof q.query === 'string' ? q.query : undefined,
+    from: typeof q.from === 'string' ? q.from : undefined,
+    to: typeof q.to === 'string' ? q.to : undefined,
+  }
+}
+
+function filtersToQuery(f: LogFilters): Record<string, string> {
+  const out: Record<string, string> = {}
+  if (f.agentId)
+    out.agentId = f.agentId
+  if (f.level)
+    out.level = f.level
+  if (f.query)
+    out.query = f.query
+  if (f.from)
+    out.from = f.from
+  if (f.to)
+    out.to = f.to
+  return out
+}
+
+const agentOptions = computed(() =>
+  agents.value.map(a => ({ label: a.name, value: a.id })),
+)
+
+const samplePending = ref(false)
+
+onMounted(async () => {
+  await refreshAgents()
+  const qf = queryFromRoute()
+  if (Object.keys(qf).length)
+    filters.value = { ...filters.value, ...qf }
+  await refresh()
+})
+
+function onApply() {
+  void router.replace({ query: filtersToQuery(filters.value) })
+  void refresh()
+}
+
+function onReset() {
+  resetFilters()
+  void router.replace({ query: {} })
+}
+
+async function addSampleLog() {
+  samplePending.value = true
+  try {
+    await create({
+      level: 'info',
+      message: `Sample log (${new Date().toISOString()})`,
+      metadata: {
+        source: 'mission-control-ui',
+        sessionId: 'demo-session',
+      },
+    })
+  }
+  catch {
+    /* errorMsg from useLogs */
+  }
+  finally {
+    samplePending.value = false
+  }
+}
+</script>
+
 <template>
   <UDashboardPanel id="logs">
     <template #header>
@@ -22,7 +121,7 @@
             variant="ghost"
             size="sm"
             :loading="pending"
-            @click="loadLogs"
+            @click="refresh"
           />
         </template>
       </UDashboardNavbar>
@@ -40,7 +139,7 @@
                 Realtime {{ connected ? 'connected' : 'disconnected' }}
               </UBadge>
               <span class="text-muted text-xs">
-                New rows broadcast as
+                Filters sync to URL on Apply ·
                 <UKbd size="sm">
                   log.created
                 </UKbd>
@@ -49,17 +148,13 @@
           </div>
         </template>
 
-        <p class="text-muted text-sm">
-          Data from authenticated
-          <UKbd size="sm">
-            GET /api/logs
-          </UKbd>
-          · create via
-          <UKbd size="sm">
-            POST /api/logs
-          </UKbd>
-          .
-        </p>
+        <LogFilters
+          v-model="filters"
+          :agent-options="agentOptions"
+          class="mb-6"
+          @apply="onApply"
+          @reset="onReset"
+        />
 
         <UAlert
           v-if="errorMsg"
@@ -67,135 +162,11 @@
           variant="soft"
           title="Could not load logs"
           :description="errorMsg"
-          class="mt-4"
+          class="mb-4"
         />
 
-        <div class="mt-4 overflow-x-auto">
-          <table class="w-full min-w-[640px] text-left text-sm">
-            <thead>
-              <tr class="border-default text-muted border-b">
-                <th class="pb-2 pe-4 font-medium">
-                  Time
-                </th>
-                <th class="pb-2 pe-4 font-medium">
-                  Level
-                </th>
-                <th class="pb-2 pe-4 font-medium">
-                  Agent
-                </th>
-                <th class="pb-2 font-medium">
-                  Message
-                </th>
-              </tr>
-            </thead>
-            <tbody class="divide-default divide-y">
-              <tr v-for="row in logs" :key="row.id">
-                <td class="text-dimmed py-2 pe-4 whitespace-nowrap">
-                  {{ formatIso(row.createdAt) }}
-                </td>
-                <td class="py-2 pe-4">
-                  <UBadge
-                    :color="levelColor(row.level)"
-                    variant="subtle"
-                  >
-                    {{ row.level }}
-                  </UBadge>
-                </td>
-                <td class="text-muted py-2 pe-4 font-mono text-xs">
-                  {{ row.agentId ?? '—' }}
-                </td>
-                <td class="text-highlighted py-2 wrap-break-word">
-                  {{ row.message }}
-                </td>
-              </tr>
-              <tr v-if="!logs.length && !pending">
-                <td colspan="4" class="text-muted py-6 text-center">
-                  No log entries yet.
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+        <LogViewer :logs="logs" :pending="pending" />
       </UCard>
     </template>
   </UDashboardPanel>
 </template>
-
-<script setup lang="ts">
-import type { LogEntry } from '~/models/log'
-import { createApiClient } from '~/services/api-client.service'
-import { createLogService } from '~/services/log.service'
-import { formatIso } from '~/utils/formatDate'
-
-definePageMeta({ layout: 'dashboard' })
-
-const config = useRuntimeConfig()
-const api = createApiClient(useRequestFetch(), String(config.public.apiBase ?? ''))
-const logService = createLogService(api)
-
-const logs = ref<LogEntry[]>([])
-const pending = ref(false)
-const samplePending = ref(false)
-const errorMsg = ref('')
-
-const { events, connected } = useRealtimeEvents()
-
-async function loadLogs() {
-  pending.value = true
-  errorMsg.value = ''
-  try {
-    logs.value = await logService.list()
-  }
-  catch (e: unknown) {
-    const err = e as { statusMessage?: string, message?: string }
-    errorMsg.value = err?.statusMessage ?? err?.message ?? 'Unknown error'
-  }
-  finally {
-    pending.value = false
-  }
-}
-
-async function addSampleLog() {
-  samplePending.value = true
-  errorMsg.value = ''
-  try {
-    await logService.create({
-      level: 'info',
-      message: `Sample log (${new Date().toISOString()})`,
-      metadata: { source: 'mission-control-ui' },
-    })
-    await loadLogs()
-  }
-  catch (e: unknown) {
-    const err = e as { statusMessage?: string, message?: string }
-    errorMsg.value = err?.statusMessage ?? err?.message ?? 'Unknown error'
-  }
-  finally {
-    samplePending.value = false
-  }
-}
-
-function levelColor(level: LogEntry['level']): 'neutral' | 'info' | 'warning' | 'error' {
-  if (level === 'error')
-    return 'error'
-  if (level === 'warn')
-    return 'warning'
-  if (level === 'debug')
-    return 'neutral'
-  return 'info'
-}
-
-watch(
-  events,
-  (list) => {
-    const last = list[list.length - 1]
-    if (last?.type === 'log.created')
-      void loadLogs()
-  },
-  { deep: true },
-)
-
-onMounted(() => {
-  void loadLogs()
-})
-</script>

@@ -1,9 +1,31 @@
+<script setup lang="ts">
+definePageMeta({ layout: 'dashboard' })
+
+const { events } = useRealtimeEvents()
+const { agents, error, isLoading, refresh } = useAgents({ events })
+
+onMounted(() => {
+  void refresh()
+})
+</script>
+
 <template>
   <UDashboardPanel id="agents">
     <template #header>
       <UDashboardNavbar title="Agents" :ui="{ right: 'gap-3' }">
         <template #leading>
           <UDashboardSidebarCollapse />
+        </template>
+        <template #right>
+          <UButton
+            icon="i-lucide-refresh-cw"
+            label="Refresh"
+            color="neutral"
+            variant="outline"
+            size="sm"
+            :loading="isLoading"
+            @click="refresh"
+          />
         </template>
       </UDashboardNavbar>
     </template>
@@ -12,21 +34,11 @@
       <UCard>
         <template #header>
           <h1 class="text-highlighted font-semibold">
-            Agents
+            Agent monitor
           </h1>
         </template>
-        <p class="text-muted text-sm">
-          Placeholder Fase 1. Lista desde el puente OpenClaw (
-          <UKbd size="sm">
-            OPENCLAW_BRIDGE_MODE
-          </UKbd>
-          ).
-        </p>
+        <AgentMonitorTable :agents="agents" :loading="isLoading" :error="error" />
       </UCard>
     </template>
   </UDashboardPanel>
 </template>
-
-<script setup lang="ts">
-definePageMeta({ layout: 'dashboard' })
-</script>

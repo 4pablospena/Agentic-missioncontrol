@@ -7,6 +7,11 @@ export interface ApiClient {
     payload: TPayload,
     opts?: FetchOptions<'json'>,
   ): Promise<TResponse>
+  patch<TPayload, TResponse>(
+    path: string,
+    payload: TPayload,
+    opts?: FetchOptions<'json'>,
+  ): Promise<TResponse>
 }
 
 export function createApiClient(fetchImpl: $Fetch, basePath = ''): ApiClient {
@@ -24,6 +29,17 @@ export function createApiClient(fetchImpl: $Fetch, basePath = ''): ApiClient {
       return fetchImpl<TResponse>(url(path), {
         ...opts,
         method: 'POST',
+        body: payload,
+      })
+    },
+    patch<TPayload, TResponse>(
+      path: string,
+      payload: TPayload,
+      opts?: FetchOptions<'json'>,
+    ) {
+      return fetchImpl<TResponse>(url(path), {
+        ...opts,
+        method: 'PATCH',
         body: payload,
       })
     },

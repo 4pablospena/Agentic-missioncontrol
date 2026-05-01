@@ -4,6 +4,7 @@ import type { ApiClient } from './api-client.service'
 
 export interface OpenClawAgentService {
   listAgents(): Promise<Agent[]>
+  getAgent(agentId: string): Promise<Agent | null>
   getHealth(): Promise<unknown>
   sendCommand(agentId: string, payload: SendAgentCommandPayload): Promise<AgentCommandResult>
 }
@@ -12,6 +13,24 @@ export function createOpenClawAgentService(client: ApiClient): OpenClawAgentServ
   return {
     listAgents() {
       return client.get<Agent[]>('/api/openclaw/agents')
+    },
+    async getAgent(agentId: string) {
+      try {
+        return await client.get<Agent>(
+          `/api/openclaw/agents/${encodeURIComponent(agentId)}`,
+        )
+      }
+      catch (e: unknown) {
+        const status
+          = typeof e === 'object' && e !== null && 'statusCode' in e
+            ? (e as { statusCode?: number }).statusCode
+            : typeof e === 'object' && e !== null && 'status' in e
+              ? (e as { status?: number }).status
+              : undefined
+        if (status === 404)
+          return null
+        throw e
+      }
     },
     getHealth() {
       return client.get('/api/openclaw/health')

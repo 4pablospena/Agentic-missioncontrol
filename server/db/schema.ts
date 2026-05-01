@@ -42,3 +42,13 @@ export const tasks = sqliteTable('tasks', {
   payloadJson: text('payload_json'),
   createdAt: text('created_at').notNull(),
 })
+
+export const alerts = sqliteTable('alerts', {
+  id: text('id').primaryKey(),
+  agentId: text('agent_id'),
+  severity: text('severity').notNull(),
+  title: text('title').notNull(),
+  message: text('message').notNull(),
+  acknowledged: integer('acknowledged', { mode: 'boolean' }).notNull().default(false),
+  createdAt: text('created_at').notNull(),
+})

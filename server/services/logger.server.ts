@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto'
-import { desc } from 'drizzle-orm'
+import { and, desc, eq, gte, lte, sql } from 'drizzle-orm'
+import type { LogFilters } from '~/models/log-filters'
 import type { LogEntry } from '~/models/log'
 import { logs } from '../db/schema'
 import { getDb } from '../db/client'
@@ -39,16 +40,48 @@ export async function createLogEntry(input: CreateLogInput): Promise<LogEntry> {
   }
 }
 
-export async function listRecentLogs(limit = 50): Promise<LogEntry[]> {
+export type ListLogsOptions = LogFilters & {
+  limit?: number
+}
+
+export async function listLogs(options: ListLogsOptions = {}): Promise<LogEntry[]> {
+  const rawLimit = options.limit ?? 100
+  const limit = Math.min(Math.max(rawLimit, 1), 500)
   const db = getDb()
-  const rows = db
-    .select()
-    .from(logs)
-    .orderBy(desc(logs.createdAt))
-    .limit(limit)
-    .all()
+  const conditions = []
+
+  if (options.agentId?.trim())
+    conditions.push(eq(logs.agentId, options.agentId.trim()))
+
+  if (options.level)
+    conditions.push(eq(logs.level, options.level))
+
+  if (options.query?.trim()) {
+    const needle = options.query.trim().toLowerCase()
+    conditions.push(sql`instr(lower(${logs.message}), ${needle}) > 0`)
+  }
+
+  if (options.from?.trim())
+    conditions.push(gte(logs.createdAt, options.from.trim()))
+
+  if (options.to?.trim())
+    conditions.push(lte(logs.createdAt, options.to.trim()))
+
+  if (options.sessionId?.trim()) {
+    const sid = options.sessionId.trim()
+    conditions.push(
+      sql`(json_extract(${logs.metadataJson}, '$.sessionId') = ${sid} OR json_extract(${logs.metadataJson}, '$.session_id') = ${sid})`,
+    )
+  }
+
+  const qb = db.select().from(logs).orderBy(desc(logs.createdAt)).limit(limit)
+  const rows = conditions.length > 0 ? qb.where(and(...conditions)).all() : qb.all()
 
   return rows.map(mapLogRowToLogEntry)
+}
+
+export async function listRecentLogs(limit = 50): Promise<LogEntry[]> {
+  return listLogs({ limit })
 }
 
 export function mapLogRowToLogEntry(row: (typeof logs)['$inferSelect']): LogEntry {
