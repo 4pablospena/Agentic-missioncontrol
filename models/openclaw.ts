@@ -5,6 +5,8 @@ export type AgentCommandType =
   | 'action.start'
   | 'action.cancel'
   | 'health.check'
+  /** Phase 4: conversational turn; gateway may return 501 until wired. */
+  | 'chat.message'
 
 export interface SendAgentCommandPayload {
   command: AgentCommandType

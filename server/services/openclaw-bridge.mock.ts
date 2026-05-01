@@ -52,6 +52,30 @@ export function createMockOpenClawBridge(): OpenClawBridge {
         message: `command.${payload.command}`,
         metadata: { commandId, input: payload.input },
       })
+
+      if (payload.command === 'chat.message') {
+        const input = payload.input as {
+          content?: string
+          contextSnippets?: string[]
+          recentMessages?: Array<{ role?: string, content?: string }>
+        } | undefined
+        const content = String(input?.content ?? '')
+        const snippets = Array.isArray(input?.contextSnippets) ? input.contextSnippets.length : 0
+        const turns = Array.isArray(input?.recentMessages) ? input.recentMessages.length : 0
+        const response
+          = `[mock assistant · ${agentId}] «${content.slice(0, 400)}${content.length > 400 ? '…' : ''}»`
+          + ` · context snippets: ${snippets} · recent turns: ${turns}`
+
+        return {
+          commandId,
+          agentId,
+          command: payload.command,
+          ok: true,
+          message: 'Mock bridge chat reply',
+          detail: { response, payload },
+        }
+      }
+
       return {
         commandId,
         agentId,

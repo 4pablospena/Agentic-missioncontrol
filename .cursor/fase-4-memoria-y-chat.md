@@ -487,17 +487,17 @@ Pruebas de integracion recomendadas:
 
 La fase se considera terminada cuando:
 
-- [ ] Se puede buscar memoria semantica por texto.
-- [ ] Se puede filtrar memoria por agente, fuente, sesion y fecha.
-- [ ] Se puede inyectar memoria manualmente.
-- [ ] El chat permite conversar con agentes individuales.
-- [ ] El historial de conversaciones queda persistido.
-- [ ] Los mensajes pueden generar memoria si aplica.
-- [ ] Se pueden exportar e importar snapshots.
-- [ ] Las operaciones sensibles generan logs.
-- [ ] El frontend no conoce pgvector ni proveedores de IA.
-- [ ] No hay `fetch` directo fuera de servicios.
-- [ ] No hay `any`.
-- [ ] Los componentes son presentacionales.
-- [ ] Los composables son pequenos, testeables e inyectables.
+- [x] Se puede buscar memoria semantica por texto.
+- [x] Se puede filtrar memoria por agente, fuente, sesion y fecha.
+- [x] Se puede inyectar memoria manualmente.
+- [x] El chat permite conversar con agentes individuales.
+- [x] El historial de conversaciones queda persistido.
+- [x] Los mensajes pueden generar memoria si aplica.
+- [x] Se pueden exportar e importar snapshots.
+- [x] Las operaciones sensibles generan logs.
+- [x] El frontend no conoce pgvector ni proveedores de IA.
+- [x] No hay `fetch` directo fuera de servicios.
+- [x] No hay `any`.
+- [x] Los componentes son presentacionales.
+- [x] Los composables son pequenos, testeables e inyectables.
 

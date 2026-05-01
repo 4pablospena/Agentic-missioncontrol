@@ -15,6 +15,12 @@ export type MissionControlEventType =
   | 'metric.updated'
   | 'session.event.created'
   | 'system.health.changed'
+  | 'memory.created'
+  | 'memory.deleted'
+  | 'memory.snapshot.exported'
+  | 'memory.snapshot.imported'
+  | 'chat.conversation.created'
+  | 'chat.message.created'
 
 export interface MissionControlEvent<TPayload = Record<string, unknown>> {
   id: string

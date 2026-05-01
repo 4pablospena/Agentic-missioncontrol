@@ -81,3 +81,44 @@ export const alerts = sqliteTable('alerts', {
   acknowledged: integer('acknowledged', { mode: 'boolean' }).notNull().default(false),
   createdAt: text('created_at').notNull(),
 })
+
+/** Phase 4: semantic memory rows (embedding stored as JSON text). */
+export const memoryItems = sqliteTable('memory_items', {
+  id: text('id').primaryKey(),
+  agentId: text('agent_id').notNull(),
+  sessionId: text('session_id'),
+  source: text('source').notNull(),
+  content: text('content').notNull(),
+  metadataJson: text('metadata_json'),
+  embeddingJson: text('embedding_json'),
+  embeddingModel: text('embedding_model'),
+  createdAt: text('created_at').notNull(),
+})
+
+export const conversations = sqliteTable('conversations', {
+  id: text('id').primaryKey(),
+  agentId: text('agent_id').notNull(),
+  title: text('title').notNull(),
+  createdAt: text('created_at').notNull(),
+  updatedAt: text('updated_at').notNull(),
+  lastMessageAt: text('last_message_at'),
+})
+
+export const chatMessages = sqliteTable('chat_messages', {
+  id: text('id').primaryKey(),
+  conversationId: text('conversation_id').notNull(),
+  agentId: text('agent_id').notNull(),
+  role: text('role').notNull(),
+  content: text('content').notNull(),
+  metadataJson: text('metadata_json'),
+  createdAt: text('created_at').notNull(),
+})
+
+export const memorySnapshots = sqliteTable('memory_snapshots', {
+  id: text('id').primaryKey(),
+  version: text('version').notNull(),
+  agentId: text('agent_id'),
+  itemCount: integer('item_count').notNull(),
+  blobJson: text('blob_json').notNull(),
+  createdAt: text('created_at').notNull(),
+})

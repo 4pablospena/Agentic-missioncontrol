@@ -36,6 +36,19 @@ export default defineNuxtConfig({
     session: {
       password: process.env.NUXT_SESSION_PASSWORD ?? '',
     },
+    /** Phase 4: embeddings / semantic memory (server-only). */
+    memoryEmbeddingApiUrl: process.env.NUXT_MEMORY_EMBEDDING_API_URL ?? '',
+    memoryEmbeddingApiKey: process.env.NUXT_MEMORY_EMBEDDING_API_KEY ?? '',
+    memoryEmbeddingModel: process.env.NUXT_MEMORY_EMBEDDING_MODEL ?? 'text-embedding-3-small',
+    memoryEmbeddingDimensions:
+      Number.parseInt(process.env.NUXT_MEMORY_EMBEDDING_DIMENSIONS ?? '256', 10) || 256,
+    memorySearchMaxScan:
+      Number.parseInt(process.env.NUXT_MEMORY_SEARCH_MAX_SCAN ?? '5000', 10) || 5000,
+    memoryEmbedChatTurns: process.env.NUXT_MEMORY_EMBED_CHAT_TURNS === 'true',
+    memoryChatRecentMessages:
+      Number.parseInt(process.env.NUXT_MEMORY_CHAT_RECENT_MESSAGES ?? '40', 10) || 40,
+    memorySemanticContextLimit:
+      Number.parseInt(process.env.NUXT_MEMORY_SEMANTIC_CONTEXT_LIMIT ?? '5', 10) || 5,
     public: {
       apiBase: process.env.NUXT_PUBLIC_API_BASE ?? '',
     },
