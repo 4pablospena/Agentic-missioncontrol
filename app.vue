@@ -2,7 +2,7 @@
 const colorMode = useColorMode()
 
 const themeColor = computed(() =>
-  colorMode.value === 'dark' ? '#18181b' : '#ffffff',
+  colorMode.value === 'dark' ? '#07070c' : '#ffffff',
 )
 
 useHead({
