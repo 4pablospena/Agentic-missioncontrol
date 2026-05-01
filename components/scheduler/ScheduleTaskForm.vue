@@ -40,11 +40,21 @@ function onSubmit() {
 
     <form class="flex flex-col gap-4" @submit.prevent="onSubmit">
       <UFormField label="Cron expression" required>
-        <UInput v-model="cronExpression" class="font-mono w-full text-sm" placeholder="*/5 * * * *" />
+        <UInput
+          v-model="cronExpression"
+          class="font-mono w-full text-sm"
+          placeholder="*/5 * * * *"
+          data-testid="schedule-cron-input"
+        />
       </UFormField>
 
       <UFormField label="Task title" required>
-        <UInput v-model="title" placeholder="Title for spawned tasks" class="w-full" />
+        <UInput
+          v-model="title"
+          placeholder="Title for spawned tasks"
+          class="w-full"
+          data-testid="schedule-title-input"
+        />
       </UFormField>
 
       <UFormField label="Description">
@@ -80,7 +90,7 @@ function onSubmit() {
         <span>Enabled</span>
       </label>
 
-      <UButton type="submit" label="Save schedule" block />
+      <UButton type="submit" label="Save schedule" block data-testid="schedule-submit" />
     </form>
   </UCard>
 </template>

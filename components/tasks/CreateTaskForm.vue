@@ -60,7 +60,12 @@ function onSubmit() {
 
     <form class="flex flex-col gap-4" @submit.prevent="onSubmit">
       <UFormField label="Title" required>
-        <UInput v-model="title" placeholder="Short title" class="w-full" />
+        <UInput
+          v-model="title"
+          placeholder="Short title"
+          class="w-full"
+          data-testid="create-task-title-input"
+        />
       </UFormField>
 
       <UFormField label="Description">
@@ -124,7 +129,7 @@ function onSubmit() {
         class="text-sm"
       />
 
-      <UButton type="submit" label="Create task" block />
+      <UButton type="submit" label="Create task" block data-testid="create-task-submit" />
     </form>
   </UCard>
 </template>

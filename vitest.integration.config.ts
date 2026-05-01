@@ -1,12 +1,10 @@
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import vue from '@vitejs/plugin-vue'
 import { defineConfig } from 'vitest/config'
 
 const root = path.dirname(fileURLToPath(import.meta.url))
 
 export default defineConfig({
-  plugins: [vue()],
   resolve: {
     alias: {
       '~': root,
@@ -14,8 +12,9 @@ export default defineConfig({
   },
   test: {
     environment: 'node',
-    include: ['tests/**/*.test.ts'],
-    exclude: ['**/node_modules/**', 'tests/integration/**'],
-    setupFiles: ['./tests/vitest-setup.ts'],
+    include: ['tests/integration/**/*.integration.test.ts'],
+    testTimeout: 120_000,
+    hookTimeout: 120_000,
+    fileParallelism: false,
   },
 })

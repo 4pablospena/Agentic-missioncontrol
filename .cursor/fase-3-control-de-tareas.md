@@ -439,6 +439,12 @@ Pruebas de integracion recomendadas:
 - Reintentar tarea fallida.
 - Crear schedule y comprobar proxima ejecucion.
 
+Automatizacion en repo (refuerzo de calidad):
+
+- HTTP integracion (Vitest): [`tests/integration/tasks-api.integration.test.ts`](tests/integration/tasks-api.integration.test.ts) — `npm run test:integration` (requiere `npm run build`).
+- E2E Playwright: carpeta [`e2e/`](e2e/) — `npm run test:e2e`; variables de ejemplo en [`.env.playwright.example`](.env.playwright.example).
+- Badge de realtime en UI: cobertura acotada en [`e2e/tasks-realtime-badge.spec.ts`](e2e/tasks-realtime-badge.spec.ts) (sin assertion de payload WS).
+
 ## Criterio de cierre
 
 La fase se considera terminada cuando:
