@@ -13,9 +13,9 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <UCard
-    class="cursor-pointer ring-default hover:ring-2"
-    :ui="{ body: 'p-3 sm:p-4' }"
+  <button
+    type="button"
+    class="border-default bg-default/80 ring-default hover:bg-elevated/60 w-full cursor-pointer rounded-lg border p-3 text-start transition hover:ring-2 sm:p-4"
     @click="emit('select', task.id)"
   >
     <div class="flex flex-col gap-2">
@@ -59,5 +59,5 @@ const emit = defineEmits<{
         />
       </div>
     </div>
-  </UCard>
+  </button>
 </template>

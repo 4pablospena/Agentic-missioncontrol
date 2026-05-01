@@ -1,28 +1,41 @@
 <script setup lang="ts">
 import type { AgentTask, TaskStatus } from '~/models/task'
 
-defineProps<{
-  title: string
-  status: TaskStatus
-  tasks: AgentTask[]
-}>()
+const props = withDefaults(
+  defineProps<{
+    title: string
+    status: TaskStatus
+    tasks: AgentTask[]
+    emphasis?: 'primary' | 'muted'
+  }>(),
+  { emphasis: 'primary' },
+)
 
 const emit = defineEmits<{
   select: [id: string]
   retry: [id: string]
   cancel: [id: string]
 }>()
+
+const rootUi = computed(() =>
+  props.emphasis === 'muted'
+    ? 'border-default/60 bg-elevated/25'
+    : 'border-default bg-elevated/40',
+)
 </script>
 
 <template>
-  <div class="border-default bg-elevated/40 flex min-w-[260px] max-w-xs flex-1 flex-col rounded-lg border">
-    <div class="border-default flex items-center justify-between gap-2 border-b px-3 py-2">
+  <div
+    class="flex min-h-0 w-full min-w-0 max-h-[min(70vh,40rem)] flex-col rounded-lg border"
+    :class="rootUi"
+  >
+    <div class="border-default flex shrink-0 items-center justify-between gap-2 border-b px-3 py-2">
       <span class="text-highlighted text-sm font-semibold">{{ title }}</span>
       <UBadge color="neutral" variant="subtle">
         {{ tasks.length }}
       </UBadge>
     </div>
-    <div class="flex flex-col gap-3 overflow-y-auto p-3">
+    <div class="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto p-3">
       <TasksTaskCard
         v-for="t in tasks"
         :key="t.id"

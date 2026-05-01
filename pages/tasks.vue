@@ -56,6 +56,26 @@ async function onCancel(id: string) {
 function onCloseDetail() {
   selectedTaskId.value = null
 }
+
+const detailOpen = computed({
+  get: () => selectedTaskId.value !== null,
+  set: (open: boolean) => {
+    if (!open)
+      onCloseDetail()
+  },
+})
+
+const detailSlideTitle = computed(() => {
+  if (detailTask.value?.title)
+    return detailTask.value.title
+  if (detailPending.value)
+    return 'Loading…'
+  return 'Task'
+})
+
+const detailSlideDescription = computed(() =>
+  detailTask.value?.description ?? '',
+)
 </script>
 
 <template>
@@ -102,31 +122,37 @@ function onCloseDetail() {
             class="mb-4"
           />
 
-          <div class="grid gap-6 lg:grid-cols-3">
-            <div class="lg:col-span-2">
-              <TasksTaskBoard
-                :grouped="grouped"
-                class="min-h-[320px]"
-                @select="onSelect"
-                @retry="onRetry"
-                @cancel="onCancel"
-              />
-            </div>
-            <div class="lg:col-span-1">
-              <div class="lg:sticky lg:top-4">
-                <TasksTaskDetailPanel
-                  :task="detailTask"
-                  :events="taskEvents"
-                  :logs="relatedLogs"
-                  :pending="detailPending"
-                  @close="onCloseDetail"
-                  @retry="onRetry"
-                  @cancel="onCancel"
-                />
-              </div>
-            </div>
-          </div>
+          <TasksTaskBoard
+            :grouped="grouped"
+            :tasks-pending="pending"
+            class="min-h-[320px]"
+            @select="onSelect"
+            @retry="onRetry"
+            @cancel="onCancel"
+          />
         </UCard>
+
+        <USlideover
+          v-model:open="detailOpen"
+          side="right"
+          inset
+          :title="detailSlideTitle"
+          :description="detailSlideDescription || undefined"
+          :ui="{ content: 'sm:max-w-xl max-w-lg w-[calc(100%-2rem)]' }"
+        >
+          <template #body>
+            <TasksTaskDetailPanel
+              variant="drawer"
+              :task="detailTask"
+              :events="taskEvents"
+              :logs="relatedLogs"
+              :pending="detailPending"
+              @close="onCloseDetail"
+              @retry="onRetry"
+              @cancel="onCancel"
+            />
+          </template>
+        </USlideover>
 
         <TasksCreateTaskForm :agent-options="agentOptions" @submit="onCreate" />
       </div>

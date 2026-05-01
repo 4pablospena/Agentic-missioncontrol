@@ -2,12 +2,16 @@
 import type { AgentTask, TaskEventRecord } from '~/models/task'
 import type { LogEntry } from '~/models/log'
 
-defineProps<{
-  task: AgentTask | null
-  events: TaskEventRecord[]
-  logs: LogEntry[]
-  pending: boolean
-}>()
+withDefaults(
+  defineProps<{
+    task: AgentTask | null
+    events: TaskEventRecord[]
+    logs: LogEntry[]
+    pending: boolean
+    variant?: 'panel' | 'drawer'
+  }>(),
+  { variant: 'panel' },
+)
 
 const emit = defineEmits<{
   close: []
@@ -27,17 +31,24 @@ function formatJson(v: unknown): string {
 
 <template>
   <div v-if="task" class="flex flex-col gap-4">
-    <div class="flex flex-wrap items-start justify-between gap-2">
-      <div>
-        <h2 class="text-highlighted text-lg font-semibold">
-          {{ task.title }}
-        </h2>
-        <p v-if="task.description" class="text-muted mt-1 text-sm">
-          {{ task.description }}
-        </p>
+    <template v-if="variant === 'drawer'">
+      <div class="flex justify-end">
+        <TasksTaskStatusBadge :status="task.status" />
       </div>
-      <TasksTaskStatusBadge :status="task.status" />
-    </div>
+    </template>
+    <template v-else>
+      <div class="flex flex-wrap items-start justify-between gap-2">
+        <div>
+          <h2 class="text-highlighted text-lg font-semibold">
+            {{ task.title }}
+          </h2>
+          <p v-if="task.description" class="text-muted mt-1 text-sm">
+            {{ task.description }}
+          </p>
+        </div>
+        <TasksTaskStatusBadge :status="task.status" />
+      </div>
+    </template>
 
     <TasksTaskProgressBar :progress="task.progress" />
 
@@ -83,7 +94,14 @@ function formatJson(v: unknown): string {
         size="sm"
         @click="emit('cancel', task.id)"
       />
-      <UButton label="Close" color="neutral" variant="soft" size="sm" @click="emit('close')" />
+      <UButton
+        v-if="variant !== 'drawer'"
+        label="Close"
+        color="neutral"
+        variant="soft"
+        size="sm"
+        @click="emit('close')"
+      />
     </div>
 
     <div class="border-default border-t" />
@@ -118,6 +136,15 @@ function formatJson(v: unknown): string {
       Loading…
     </div>
   </div>
+
+  <div v-else-if="variant === 'drawer' && pending" class="text-muted text-sm">
+    Loading…
+  </div>
+
+  <div v-else-if="variant === 'drawer'" class="text-muted text-sm">
+    Could not load this task.
+  </div>
+
   <div v-else class="text-muted text-sm">
     Select a task to view details.
   </div>

@@ -5,9 +5,6 @@ import type { AgentTask } from '~/models/task'
 import TaskCard from '../components/tasks/TaskCard.vue'
 
 const stubs = {
-  UCard: {
-    template: '<div><slot /></div>',
-  },
   TasksTaskStatusBadge: { template: '<span />', props: ['status'] },
   TasksTaskProgressBar: { template: '<div />', props: ['progress'] },
   UButton: {
