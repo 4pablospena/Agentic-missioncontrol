@@ -4,9 +4,9 @@
 
 Duracion estimada: semanas 1-2.
 
-Objetivo: dejar preparada la base tecnica de OpenClaw Mission Control para construir un dashboard Nuxt 3 mantenible, testeable y alineado con SOLID. Esta fase no debe buscar completar todos los modulos, sino crear las capas, contratos y flujos minimos sobre los que se apoyaran observabilidad, tareas, memoria y chat.
+Objetivo: dejar preparada la base tecnica de OpenClaw Mission Control para construir un dashboard Nuxt 4 mantenible, testeable y alineado con SOLID. Esta fase no debe buscar completar todos los modulos, sino crear las capas, contratos y flujos minimos sobre los que se apoyaran observabilidad, tareas, memoria y chat.
 
-El resultado debe ser una aplicacion Nuxt 3 funcional con autenticacion, layout principal, API Nitro, base de datos, logging centralizado y canal realtime basico.
+El resultado debe ser una aplicacion Nuxt 4 funcional con autenticacion, layout principal, API Nitro, base de datos, logging centralizado y canal realtime basico.
 
 ## Principios SOLID que gobiernan la fase
 
@@ -18,7 +18,7 @@ El resultado debe ser una aplicacion Nuxt 3 funcional con autenticacion, layout 
 
 ## Alcance funcional
 
-- Crear proyecto con Nuxt 3, Vue 3, TypeScript y Tailwind CSS.
+- Crear proyecto con Nuxt 4, Vue 3, TypeScript y Tailwind CSS (Nuxt UI + Tailwind v4 via CSS imports).
 - Definir layouts principales: publico, autenticado y dashboard.
 - Configurar autenticacion con Nuxt Auth Utils.
 - Crear rutas base de API usando Nitro server routes.
@@ -91,9 +91,9 @@ app/
     +-- severity.ts
 ```
 
-## Paso 1: Crear base Nuxt 3
+## Paso 1: Crear base Nuxt 4
 
-1. Crear el proyecto Nuxt 3 con TypeScript.
+1. Crear el proyecto Nuxt 4 con TypeScript.
 2. Instalar y configurar Tailwind CSS.
 3. Activar reglas estrictas de TypeScript.
 4. Crear layout `dashboard.vue` con sidebar, header y area principal.

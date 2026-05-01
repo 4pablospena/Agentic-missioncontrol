@@ -12,7 +12,7 @@ El proyecto debe incluir frontend, backend, base de datos y puente de integracio
 
 ## Objetivo de la Fase 1
 
-Construir una infraestructura local funcional con Nuxt 3, Nitro, SQLite, Drizzle ORM, WebSocket y una primera capa de integracion con OpenClaw.
+Construir una infraestructura local funcional con Nuxt 4, Nitro, SQLite, Drizzle ORM, WebSocket y una primera capa de integracion con OpenClaw.
 
 La Fase 1 no se limita a preparar pantallas vacias. Debe permitir:
 
@@ -30,7 +30,7 @@ La Fase 1 incluye infraestructura base y conexion inicial con agentes reales.
 
 Incluye:
 
-- Setup Nuxt 3.
+- Setup Nuxt 4.
 - Layout principal.
 - API Nitro.
 - Base de datos SQLite.
@@ -52,7 +52,7 @@ No incluye todavia:
 
 El repositorio incluira todo lo necesario para el MVP:
 
-- Frontend Nuxt 3.
+- Frontend Nuxt 4.
 - Backend Nitro.
 - Base de datos local.
 - Servicios de dominio.
@@ -66,7 +66,7 @@ Motivo:
 - Reduce friccion inicial.
 - Permite iterar rapido.
 - Facilita compartir modelos entre frontend y servidor.
-- Encaja con Nuxt 3 y Nitro.
+- Encaja con Nuxt 4 y Nitro.
 
 ### 3. Integracion con OpenClaw
 

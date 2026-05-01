@@ -6,17 +6,28 @@ defineProps<{
 }>()
 
 const colorMode = useColorMode()
+const auth = useAuthSession()
 
-const user = {
-  name: 'Local operator',
-  avatar: {
-    src: 'https://avatar.vercel.sh/local-operator',
-    alt: 'Operator',
-  },
+const sessionUser = computed(() => auth.user.value)
+
+const display = computed(() => {
+  const u = sessionUser.value
+  return {
+    name: u?.name ?? 'Operator',
+    avatar: {
+      src: `https://avatar.vercel.sh/${encodeURIComponent(u?.email ?? 'operator')}`,
+      alt: u?.name ?? 'Operator',
+    },
+  }
+})
+
+async function signOut() {
+  await auth.logout()
+  await navigateTo('/login')
 }
 
 const items = computed<DropdownMenuItem[][]>(() => [
-  [{ type: 'label', label: user.name, avatar: user.avatar }],
+  [{ type: 'label', label: display.value.name, avatar: display.value.avatar }],
   [
     {
       label: 'Appearance',
@@ -44,6 +55,13 @@ const items = computed<DropdownMenuItem[][]>(() => [
         },
       ],
     },
+    {
+      label: 'Sign out',
+      icon: 'i-lucide-log-out',
+      onSelect() {
+        void signOut()
+      },
+    },
   ],
 ])
 </script>
@@ -56,8 +74,8 @@ const items = computed<DropdownMenuItem[][]>(() => [
   >
     <UButton
       v-bind="{
-        ...user,
-        label: collapsed ? undefined : user.name,
+        ...display,
+        label: collapsed ? undefined : display.name,
         trailingIcon: collapsed ? undefined : 'i-lucide-chevrons-up-down',
       }"
       color="neutral"

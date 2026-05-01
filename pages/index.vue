@@ -28,16 +28,22 @@
             </div>
           </template>
 
-          <p class="text-muted text-sm">
-            Plan de trabajo en
-            <UKbd size="sm">
-              .cursor/adr-fase-1-decisiones-tecnicas.md
-            </UKbd>
-            y
-            <UKbd size="sm">
-              .cursor/fase-1-infraestructura-base.md
-            </UKbd>.
-          </p>
+          <div class="flex flex-wrap items-center gap-2">
+            <p class="text-muted text-sm">
+              Plan de trabajo en
+              <UKbd size="sm">
+                .cursor/adr-fase-1-decisiones-tecnicas.md
+              </UKbd>
+              y
+              <UKbd size="sm">
+                .cursor/fase-1-infraestructura-base.md
+              </UKbd>
+              .
+            </p>
+            <UBadge :color="realtimeConnected ? 'success' : 'neutral'" variant="subtle" size="sm">
+              Realtime {{ realtimeConnected ? 'live' : 'offline' }}
+            </UBadge>
+          </div>
 
           <UAlert
             v-if="error"
@@ -89,6 +95,7 @@
 definePageMeta({ layout: 'dashboard' })
 
 const { agents, health, error, isLoading, refresh } = useOpenClawAgents()
+const { connected: realtimeConnected } = useRealtimeEvents()
 
 onMounted(() => {
   void refresh()
