@@ -15,19 +15,26 @@ export function getDb() {
     const absolutePath = resolveRelativeDbPath(relativePath)
     mkdirSync(dirname(absolutePath), { recursive: true })
     const sqlite = new Database(absolutePath)
-    drizzleSingleton = drizzle(sqlite, { schema })
-
-    const migrationsFolder = resolveMigrationsFolder()
-    if (migrationsFolder)
-      migrate(drizzleSingleton, { migrationsFolder })
+    try {
+      const db = drizzle(sqlite, { schema })
+      const migrationsFolder = resolveMigrationsFolder()
+      if (migrationsFolder)
+        migrate(db, { migrationsFolder })
+      drizzleSingleton = db
+    }
+    catch (e) {
+      sqlite.close()
+      throw e
+    }
   }
   return drizzleSingleton
 }
 
 function resolveMigrationsFolder(): string | null {
+  /** Prefer repo `server/db/migrations` so `nuxt build && node .output/...` never applies stale SQL copied under `.output` from an older build. */
   const candidates = [
-    join(process.cwd(), '.output/server/db/migrations'),
     join(process.cwd(), 'server/db/migrations'),
+    join(process.cwd(), '.output/server/db/migrations'),
   ]
   for (const folder of candidates) {
     if (existsSync(join(folder, 'meta', '_journal.json')))
