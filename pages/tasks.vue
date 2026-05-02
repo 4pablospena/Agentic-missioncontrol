@@ -101,13 +101,20 @@ const detailSlideDescription = computed(() =>
 
     <template #body>
       <div class="flex flex-col gap-8">
-        <section class="page-toolbar pb-2">
-          <h2 class="text-highlighted font-semibold tracking-tight">
-            Operations queue
-          </h2>
-          <p class="text-muted mt-1 max-w-2xl text-sm leading-snug">
-            Kanban by status with realtime updates. Selecting a row opens drill-down; create work from the composer below.
+        <section class="page-toolbar flex flex-wrap items-center justify-between gap-3 pb-2">
+          <p class="text-muted text-sm leading-snug">
+            Operations queue. Select a row for drill-down; compose new work below.
           </p>
+          <UTooltip text="Kanban groups tasks by status. Realtime updates push from the gateway.">
+            <UButton
+              icon="i-lucide-info"
+              color="neutral"
+              variant="ghost"
+              size="xs"
+              square
+              aria-label="How tasks board works"
+            />
+          </UTooltip>
         </section>
 
         <UCard class="panel-shell shadow-none ring-0" :ui="{ body: 'p-4 sm:p-5' }">

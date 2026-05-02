@@ -7,14 +7,14 @@ function closeMobileNav() {
   open.value = false
 }
 
-/** TenacitOS-style grouping: Control / Observability / Operations / Context (MIT UX reference). */
+/** Sidebar grouping: Control / Observability / Operations / Context / Diagnostics. */
 const links = [[{
   label: 'Control',
   icon: 'i-lucide-layout-grid',
   type: 'trigger' as const,
   defaultOpen: true,
   children: [{
-    label: 'Dashboard',
+    label: 'Overview',
     icon: 'i-lucide-layout-dashboard',
     to: '/',
     onSelect: closeMobileNav,
@@ -28,7 +28,13 @@ const links = [[{
   label: 'Observability',
   icon: 'i-lucide-activity',
   type: 'trigger' as const,
+  defaultOpen: true,
   children: [{
+    label: 'Monitoring',
+    icon: 'i-lucide-gauge',
+    to: '/monitoring',
+    onSelect: closeMobileNav,
+  }, {
     label: 'Logs',
     icon: 'i-lucide-scroll-text',
     to: '/logs',
@@ -53,7 +59,6 @@ const links = [[{
   label: 'Context',
   icon: 'i-lucide-layers',
   type: 'trigger' as const,
-  defaultOpen: true,
   children: [{
     label: 'Memory',
     icon: 'i-lucide-database',
@@ -63,6 +68,16 @@ const links = [[{
     label: 'Chat',
     icon: 'i-lucide-message-square',
     to: '/chat',
+    onSelect: closeMobileNav,
+  }],
+}, {
+  label: 'Diagnostics',
+  icon: 'i-lucide-wrench',
+  type: 'trigger' as const,
+  children: [{
+    label: 'Bridge & sessions',
+    icon: 'i-lucide-stethoscope',
+    to: '/diagnostics',
     onSelect: closeMobileNav,
   }],
 }], [{
@@ -85,20 +100,19 @@ function flattenPrimaryNav(items: NavigationMenuItem[]): NavigationMenuItem[] {
   })
 }
 
+const ROUTE_DESCRIPTIONS: Record<string, string> = {
+  '/': 'System overview at a glance',
+  '/monitoring': 'KPIs, agents, alerts, recent logs',
+  '/diagnostics': 'Raw bridge state and session timeline',
+  '/memory': 'Semantic memory, snapshots, embeddings',
+  '/chat': 'Agent conversations and threads',
+}
+
 const groups = computed((): CommandPaletteGroup[] => {
   const primary = flattenPrimaryNav(links[0]).map((item) => {
-    if (item.to === '/memory') {
-      return {
-        ...item,
-        description: 'Semantic memory, snapshots, embeddings',
-      }
-    }
-    if (item.to === '/chat') {
-      return {
-        ...item,
-        description: 'Agent conversations and threads',
-      }
-    }
+    const desc = typeof item.to === 'string' ? ROUTE_DESCRIPTIONS[item.to] : undefined
+    if (desc)
+      return { ...item, description: desc }
     return item
   })
   const items = [...primary, ...links[1]] as CommandPaletteItem[]
