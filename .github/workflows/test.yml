@@ -14,6 +14,12 @@ jobs:
         with:
           node-version: '22'
           cache: npm
+          cache-dependency-path: package-lock.json
+      - run: >-
+          node -e "const p=require('./package.json'); const l=require('./package-lock.json');
+          const w=p.devDependencies?.commander ?? p.dependencies?.commander;
+          if (w && !l.packages?.['node_modules/commander'])
+          { console.error('package-lock.json is missing hoisted commander; run npm install locally and commit package-lock.json'); process.exit(1); }"
       - run: npm ci
       - run: npm run test
 
@@ -25,6 +31,12 @@ jobs:
         with:
           node-version: '22'
           cache: npm
+          cache-dependency-path: package-lock.json
+      - run: >-
+          node -e "const p=require('./package.json'); const l=require('./package-lock.json');
+          const w=p.devDependencies?.commander ?? p.dependencies?.commander;
+          if (w && !l.packages?.['node_modules/commander'])
+          { console.error('package-lock.json is missing hoisted commander; run npm install locally and commit package-lock.json'); process.exit(1); }"
       - run: npm ci
       - run: npm run test:integration
         env:
@@ -38,6 +50,12 @@ jobs:
         with:
           node-version: '22'
           cache: npm
+          cache-dependency-path: package-lock.json
+      - run: >-
+          node -e "const p=require('./package.json'); const l=require('./package-lock.json');
+          const w=p.devDependencies?.commander ?? p.dependencies?.commander;
+          if (w && !l.packages?.['node_modules/commander'])
+          { console.error('package-lock.json is missing hoisted commander; run npm install locally and commit package-lock.json'); process.exit(1); }"
       - run: npm ci
       - run: npx playwright install chromium --with-deps
       - run: npm run test:e2e
