@@ -45,10 +45,19 @@ async function onSubmit(payload: ScheduleTaskPayload) {
     </template>
 
     <template #body>
+      <section class="page-toolbar pb-6">
+        <h2 class="text-highlighted font-semibold tracking-tight">
+          Cron & scheduled jobs
+        </h2>
+        <p class="text-muted mt-1 max-w-2xl text-sm leading-snug">
+          Define payloads and cron expressions mapped to Nitro-backed schedules. Matches the observability shell used across Mission Control.
+        </p>
+      </section>
+
       <div class="grid gap-6 lg:grid-cols-2">
         <SchedulerScheduleTaskForm @submit="onSubmit" />
 
-        <UCard>
+        <UCard class="shadow-none ring-0 panel-shell" :ui="{ body: 'p-4 sm:p-5' }">
           <template #header>
             <span class="text-highlighted font-semibold">Schedules</span>
           </template>

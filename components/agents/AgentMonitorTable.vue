@@ -1,17 +1,21 @@
 <script setup lang="ts">
 import type { AgentSummary } from '~/models/agent'
 
-defineProps<{
+withDefaults(defineProps<{
   agents: AgentSummary[]
   loading?: boolean
   error?: string | null
-}>()
+  /** Omit top alert when the page already surfaced the error above. */
+  showErrorAlert?: boolean
+}>(), {
+  showErrorAlert: true,
+})
 </script>
 
 <template>
   <div>
     <UAlert
-      v-if="error"
+      v-if="showErrorAlert && error"
       color="error"
       variant="soft"
       title="Agents"

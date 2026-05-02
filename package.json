@@ -6,6 +6,7 @@
     "build": "nuxt build",
     "postbuild": "node scripts/copy-db-migrations.mjs",
     "dev": "nuxt dev",
+    "dev:host": "nuxt dev --host 0.0.0.0",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",

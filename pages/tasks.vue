@@ -100,13 +100,22 @@ const detailSlideDescription = computed(() =>
     </template>
 
     <template #body>
-      <div class="flex flex-col gap-6">
-        <UCard>
+      <div class="flex flex-col gap-8">
+        <section class="page-toolbar pb-2">
+          <h2 class="text-highlighted font-semibold tracking-tight">
+            Operations queue
+          </h2>
+          <p class="text-muted mt-1 max-w-2xl text-sm leading-snug">
+            Kanban by status with realtime updates. Selecting a row opens drill-down; create work from the composer below.
+          </p>
+        </section>
+
+        <UCard class="panel-shell shadow-none ring-0" :ui="{ body: 'p-4 sm:p-5' }">
           <template #header>
             <div class="flex flex-wrap items-center justify-between gap-2">
-              <h1 class="text-highlighted font-semibold">
+              <h2 class="text-highlighted font-semibold">
                 Task board
-              </h1>
+              </h2>
               <UBadge :color="connected ? 'success' : 'neutral'" variant="subtle">
                 Realtime {{ connected ? 'connected' : 'disconnected' }}
               </UBadge>

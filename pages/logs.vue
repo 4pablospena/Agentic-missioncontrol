@@ -128,12 +128,17 @@ async function addSampleLog() {
     </template>
 
     <template #body>
-      <UCard>
+      <UCard class="shadow-none ring-0 panel-shell" :ui="{ body: 'p-4 sm:p-5' }">
         <template #header>
           <div class="flex flex-wrap items-center justify-between gap-2">
-            <h1 class="text-highlighted font-semibold">
-              Logs
-            </h1>
+            <div>
+              <h1 class="text-highlighted font-semibold tracking-tight">
+                Logs
+              </h1>
+              <p class="text-muted mt-1 max-w-2xl text-sm leading-snug">
+                Structured feed filtered by bridge metadata. Matches the observability pane of the shell below.
+              </p>
+            </div>
             <div class="flex items-center gap-2">
               <UBadge :color="connected ? 'success' : 'neutral'" variant="subtle">
                 Realtime {{ connected ? 'connected' : 'disconnected' }}

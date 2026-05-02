@@ -13,6 +13,16 @@ describe('openclaw-gateway-errors', () => {
     expect(err.data).toEqual({ reason: 'ECONNREFUSED' })
   })
 
+  it('includes attempted ws URL when context provided', () => {
+    const cause = Object.assign(new Error('connect ECONNREFUSED'), { code: 'ECONNREFUSED' })
+    const err = gatewayConnectionToHttpError(cause, { wsUrl: 'ws://100.104.12.57:18789' })
+    expect(err.statusMessage).toContain('100.104.12.57:18789')
+    expect(err.data).toMatchObject({
+      reason: 'ECONNREFUSED',
+      attemptedWsUrl: 'ws://100.104.12.57:18789',
+    })
+  })
+
   it('maps ECONNREFUSED by message when code missing', () => {
     const err = gatewayConnectionToHttpError(new Error('connect ECONNREFUSED 127.0.0.1:18789'))
     expect(err.statusCode).toBe(503)

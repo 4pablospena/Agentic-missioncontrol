@@ -1,6 +1,108 @@
 @import "tailwindcss";
 @import "@nuxt/ui";
 
+/* TenacitOS-lite UX reference (MIT): github.com/carlosazaustre/tenacitOS — dashboard shell tokens only */
+
+.font-metric {
+  font-variant-numeric: tabular-nums;
+  font-family:
+    ui-monospace,
+    "SFMono-Regular",
+    Menlo,
+    Monaco,
+    Consolas,
+    "Liberation Mono",
+    "Courier New",
+    monospace;
+}
+
+.dock-sidebar-border {
+  border-right-width: 1px;
+  border-color: color-mix(in oklab, var(--ui-border) 75%, transparent);
+}
+
+@media (prefers-color-scheme: dark) {
+  .dock-sidebar-border {
+    box-shadow: inset -1px 0 0 rgb(255 255 255 / 0.04);
+  }
+}
+
+.dock-shell {
+  box-shadow:
+    0 -1px 0 color-mix(in oklab, var(--ui-border) 80%, transparent),
+    0 -12px 32px rgb(0 0 0 / 0.12);
+}
+
+.dark .dock-shell {
+  box-shadow:
+    0 -1px 0 rgb(255 255 255 / 0.06),
+    0 -16px 40px rgb(0 0 0 / 0.45);
+}
+
+.panel-shell {
+  border-radius: var(--ui-radius);
+  background-color: color-mix(in oklab, var(--ui-bg-elevated) 88%, transparent);
+  box-shadow:
+    0 0 0 1px color-mix(in oklab, var(--ui-border) 65%, transparent),
+    0 2px 12px rgb(0 0 0 / 0.05);
+}
+
+.dark .panel-shell {
+  box-shadow:
+    0 0 0 1px rgb(255 255 255 / 0.06),
+    0 4px 24px rgb(0 0 0 / 0.35);
+}
+
+.page-toolbar {
+  border-bottom: 1px solid color-mix(in oklab, var(--ui-border) 70%, transparent);
+}
+
+.log-feed {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.log-feed--timeline::before {
+  content: "";
+  position: absolute;
+  left: 0.65rem;
+  top: 0.5rem;
+  bottom: 0.5rem;
+  width: 1px;
+  background: color-mix(in oklab, var(--ui-border) 80%, transparent);
+  pointer-events: none;
+}
+
+.log-feed-row--feed {
+  position: relative;
+  margin-left: 1.5rem;
+}
+
+.log-feed-row--feed::before {
+  content: "";
+  position: absolute;
+  left: -1.1rem;
+  top: 1.1rem;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 9999px;
+  background: var(--ui-primary);
+  box-shadow: 0 0 0 2px var(--ui-bg);
+}
+
+.log-feed--compact .log-feed-row--feed {
+  margin-left: 1.25rem;
+}
+
+.log-feed--compact .log-feed-row--feed::before {
+  left: -0.95rem;
+  top: 0.85rem;
+  width: 0.35rem;
+  height: 0.35rem;
+}
+
 /* Dashboard canvas: RevX-like violet/cyan glow (dark mode only). Layout unchanged. */
 .dark .dashboard-canvas {
   background-color: #07070c;

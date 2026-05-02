@@ -164,7 +164,7 @@ export class OpenClawWsGateway {
     }
     catch (e) {
       this.cleanupSocket()
-      throw gatewayConnectionToHttpError(e)
+      throw gatewayConnectionToHttpError(e, { wsUrl: this.options.wsUrl })
     }
   }
 

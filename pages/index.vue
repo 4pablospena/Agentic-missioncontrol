@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { OpenClawHealth } from '~/models/openclaw'
 import type { NamedSeriesPoint } from '~/models/metric'
 
 definePageMeta({ layout: 'dashboard' })
@@ -33,6 +34,23 @@ const {
   refresh: refreshTimeline,
 } = useSessionTimeline(sessionIdInput)
 
+const { data: ocHealth, refresh: refreshOcHealth } = useFetch<OpenClawHealth>(
+  '/api/openclaw/health',
+  { server: false, default: () => null },
+)
+
+const bridgeBadge = computed(() => {
+  const h = ocHealth.value
+  if (h === null || h === undefined)
+    return { label: 'OpenClaw bridge', color: 'neutral' as const, text: '…' }
+  const mode = h.bridgeMode === 'mock' ? 'mock gateway' : 'live gateway'
+  if (h.bridgeMode === 'mock')
+    return { label: 'OpenClaw bridge', color: 'neutral' as const, text: mode }
+  if (h.gatewayReachable === true)
+    return { label: 'OpenClaw bridge', color: 'success' as const, text: mode }
+  return { label: 'OpenClaw bridge', color: 'error' as const, text: mode }
+})
+
 const tokenSeries = computed<NamedSeriesPoint[]>(() => {
   const t = tokens.value
   if (!t)
@@ -50,6 +68,7 @@ function dashboardRefresh() {
   void refreshAlerts()
   void refreshMetrics()
   void refreshTimeline()
+  void refreshOcHealth()
 }
 
 onMounted(() => {
@@ -60,7 +79,7 @@ onMounted(() => {
 <template>
   <UDashboardPanel id="home">
     <template #header>
-      <UDashboardNavbar title="Dashboard" :ui="{ right: 'gap-3' }">
+      <UDashboardNavbar title="Mission Control" :ui="{ right: 'gap-3' }">
         <template #leading>
           <UDashboardSidebarCollapse />
         </template>
@@ -82,32 +101,49 @@ onMounted(() => {
     </template>
 
     <template #body>
-      <div class="flex flex-col gap-6">
+      <div class="flex flex-col gap-8">
+        <section class="page-toolbar pb-2">
+          <p class="text-muted max-w-3xl text-sm leading-snug">
+            Control center overview: agents from the bridge, metrics, alerts, and recent telemetry. Mirrors a lightweight TenacitOS-style shell—without host filesystem coupling.
+          </p>
+        </section>
+
         <section class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <MetricCard
+          <MetricsMetricCard
             title="Agents"
             :value="agents.length"
             description="From OpenClaw bridge"
           />
-          <MetricCard
+          <MetricsMetricCard
             title="Total tokens"
             :value="tokens?.total ?? '—'"
             description="Sum across listed agents"
           />
-          <MetricCard
+          <MetricsMetricCard
             title="Open alerts"
             :value="alerts.filter(a => !a.acknowledged).length"
             description="Unacknowledged"
           />
-          <MetricCard
+          <MetricsMetricCard
             title="Recent logs"
             :value="recentLogs.length"
             description="Last 12 rows"
           />
         </section>
 
-        <div class="grid gap-6 xl:grid-cols-2">
-          <UCard>
+        <section class="flex flex-wrap items-center gap-3 px-4 py-3 panel-shell rounded-xl font-metric text-[11px] sm:text-xs">
+          <span class="text-dimmed font-medium uppercase tracking-wide">Bridge</span>
+          <UBadge :color="bridgeBadge.color" variant="subtle" size="sm">
+            {{ bridgeBadge.text }}
+          </UBadge>
+          <span v-if="ocHealth?.gatewayStatus != null" class="text-muted tabular-nums">
+            HTTP {{ ocHealth.gatewayStatus }}
+          </span>
+          <span v-if="ocHealth?.message" class="text-muted max-w-xl truncate">{{ ocHealth.message }}</span>
+        </section>
+
+        <div class="grid gap-6 xl:grid-cols-12">
+          <UCard class="shadow-none ring-0 xl:col-span-7 panel-shell" :ui="{ body: 'p-4 sm:p-5' }">
             <template #header>
               <h2 class="text-highlighted font-semibold">
                 Agents
@@ -122,25 +158,25 @@ onMounted(() => {
               class="mb-4"
             />
             <div class="grid gap-3 sm:grid-cols-2">
-              <AgentSummaryCard v-for="a in agents" :key="a.id" :agent="a" />
+              <AgentsAgentSummaryCard v-for="a in agents" :key="a.id" :agent="a" dense />
               <p v-if="!agents.length && !isLoading" class="text-muted text-sm sm:col-span-2">
                 No agents loaded.
               </p>
             </div>
           </UCard>
 
-          <UCard>
+          <UCard class="shadow-none ring-0 xl:col-span-5 panel-shell" :ui="{ body: 'p-4 sm:p-5' }">
             <template #header>
               <h2 class="text-highlighted font-semibold">
                 Token usage
               </h2>
             </template>
-            <TokenUsageChart :series="tokenSeries" :max="tokenMax" />
+            <MetricsTokenUsageChart :series="tokenSeries" :max="tokenMax" />
           </UCard>
         </div>
 
         <div class="grid gap-6 xl:grid-cols-2">
-          <UCard>
+          <UCard class="shadow-none ring-0 panel-shell" :ui="{ body: 'p-4 sm:p-5' }">
             <template #header>
               <div class="flex flex-wrap items-center justify-between gap-2">
                 <h2 class="text-highlighted font-semibold">
@@ -148,7 +184,7 @@ onMounted(() => {
                 </h2>
               </div>
             </template>
-            <AlertList
+            <AlertsAlertList
               :alerts="alerts.slice(0, 8)"
               :loading="alertsPending"
               :acknowledge-pending-id="ackPendingId"
@@ -156,7 +192,7 @@ onMounted(() => {
             />
           </UCard>
 
-          <UCard>
+          <UCard class="shadow-none ring-0 panel-shell" :ui="{ body: 'p-4 sm:p-5' }">
             <template #header>
               <h2 class="text-highlighted font-semibold">
                 Models & sessions
@@ -206,16 +242,16 @@ onMounted(() => {
           </UCard>
         </div>
 
-        <UCard>
+        <UCard class="shadow-none ring-0 panel-shell" :ui="{ body: 'p-4 sm:p-5' }">
           <template #header>
             <h2 class="text-highlighted font-semibold">
               Recent logs
             </h2>
           </template>
-          <LogsLogViewer :logs="recentLogs" :pending="logsPending" />
+          <LogsLogViewer compact layout="timeline" :logs="recentLogs" :pending="logsPending" />
         </UCard>
 
-        <UCard>
+        <UCard class="shadow-none ring-0 panel-shell" :ui="{ body: 'p-4 sm:p-5' }">
           <template #header>
             <h2 class="text-highlighted font-semibold">
               Session timeline
@@ -245,16 +281,16 @@ onMounted(() => {
               @click="refreshTimeline"
             />
           </div>
-          <EventTimeline :events="timelineEvents" />
+          <TimelineEventTimeline :events="timelineEvents" />
         </UCard>
 
-        <UCard v-if="health">
+        <UCard v-if="health" class="shadow-none ring-0 panel-shell" :ui="{ body: 'p-4 sm:p-5' }">
           <template #header>
             <h2 class="text-highlighted font-semibold">
-              Bridge health
+              Bridge health (agents service)
             </h2>
           </template>
-          <pre class="bg-muted overflow-auto rounded-lg p-4 text-xs ring ring-default">{{ JSON.stringify(health, null, 2) }}</pre>
+          <pre class="bg-muted overflow-auto rounded-lg p-4 font-metric text-[11px] ring ring-default sm:text-xs">{{ JSON.stringify(health, null, 2) }}</pre>
         </UCard>
       </div>
     </template>

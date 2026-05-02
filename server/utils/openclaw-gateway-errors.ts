@@ -22,16 +22,28 @@ function messageIncludes(e: unknown, needle: string): boolean {
   return msg.includes(needle)
 }
 
+export interface GatewayConnectionErrorContext {
+  /** WebSocket URL Mission Control tried (no secrets). */
+  wsUrl?: string
+}
+
 /** Maps WebSocket / TCP connect failures to a 503 with actionable messaging. */
-export function gatewayConnectionToHttpError(cause: unknown): ReturnType<typeof createError> {
+export function gatewayConnectionToHttpError(
+  cause: unknown,
+  ctx?: GatewayConnectionErrorContext,
+): ReturnType<typeof createError> {
   const code = errnoCode(cause)
+  const tried = ctx?.wsUrl?.trim() ? ` Tried: ${ctx.wsUrl.trim()}.` : ''
 
   if (code === 'ECONNREFUSED' || messageIncludes(cause, 'ECONNREFUSED')) {
     return createError({
       statusCode: 503,
       statusMessage:
-        'OpenClaw gateway unreachable (connection refused). Start the gateway or fix OPENCLAW_GATEWAY_WS / OPENCLAW_GATEWAY_URL in .env, then restart Nuxt.',
-      data: { reason: 'ECONNREFUSED' satisfies GatewayConnectionReason },
+        `OpenClaw gateway unreachable (connection refused).${tried} Start the gateway on that host:port, bind it to 0.0.0.0 (not only 127.0.0.1), fix OPENCLAW_GATEWAY_WS / OPENCLAW_GATEWAY_URL, then restart Nuxt.`,
+      data: {
+        reason: 'ECONNREFUSED' satisfies GatewayConnectionReason,
+        ...(ctx?.wsUrl?.trim() ? { attemptedWsUrl: ctx.wsUrl.trim() } : {}),
+      },
     })
   }
 

@@ -7,31 +7,48 @@ function closeMobileNav() {
   open.value = false
 }
 
+/** TenacitOS-style grouping: Control / Observability / Operations / Context (MIT UX reference). */
 const links = [[{
-  label: 'Dashboard',
-  icon: 'i-lucide-layout-dashboard',
-  to: '/',
-  onSelect: closeMobileNav,
+  label: 'Control',
+  icon: 'i-lucide-layout-grid',
+  type: 'trigger' as const,
+  defaultOpen: true,
+  children: [{
+    label: 'Dashboard',
+    icon: 'i-lucide-layout-dashboard',
+    to: '/',
+    onSelect: closeMobileNav,
+  }, {
+    label: 'Agents',
+    icon: 'i-lucide-bot',
+    to: '/agents',
+    onSelect: closeMobileNav,
+  }],
 }, {
-  label: 'Agents',
-  icon: 'i-lucide-bot',
-  to: '/agents',
-  onSelect: closeMobileNav,
+  label: 'Observability',
+  icon: 'i-lucide-activity',
+  type: 'trigger' as const,
+  children: [{
+    label: 'Logs',
+    icon: 'i-lucide-scroll-text',
+    to: '/logs',
+    onSelect: closeMobileNav,
+  }],
 }, {
-  label: 'Logs',
-  icon: 'i-lucide-scroll-text',
-  to: '/logs',
-  onSelect: closeMobileNav,
-}, {
-  label: 'Tasks',
-  icon: 'i-lucide-square-kanban',
-  to: '/tasks',
-  onSelect: closeMobileNav,
-}, {
-  label: 'Scheduler',
-  icon: 'i-lucide-clock',
-  to: '/scheduler',
-  onSelect: closeMobileNav,
+  label: 'Operations',
+  icon: 'i-lucide-orbit',
+  type: 'trigger' as const,
+  children: [{
+    label: 'Tasks',
+    icon: 'i-lucide-square-kanban',
+    to: '/tasks',
+    onSelect: closeMobileNav,
+  }, {
+    label: 'Scheduler',
+    icon: 'i-lucide-clock',
+    to: '/scheduler',
+    onSelect: closeMobileNav,
+  }],
 }, {
   label: 'Context',
   icon: 'i-lucide-layers',
@@ -73,13 +90,13 @@ const groups = computed(() => {
     if (item.to === '/memory') {
       return {
         ...item,
-        description: 'Semantic search, embeddings, cosine similarity, vector memory, snapshots',
+        description: 'Semantic memory, snapshots, embeddings',
       }
     }
     if (item.to === '/chat') {
       return {
         ...item,
-        description: 'Agent conversations, threads, messaging, realtime chat',
+        description: 'Agent conversations and threads',
       }
     }
     return item
@@ -93,13 +110,13 @@ const groups = computed(() => {
 </script>
 
 <template>
-  <UDashboardGroup unit="rem" class="dashboard-canvas relative min-h-dvh">
+  <UDashboardGroup unit="rem" class="dashboard-canvas relative min-h-dvh pb-[3.75rem] md:pb-16">
     <UDashboardSidebar
       id="default"
       v-model:open="open"
       collapsible
       resizable
-      class="bg-elevated/35"
+      class="bg-elevated/35 dock-sidebar-border"
       :ui="{ footer: 'lg:border-t lg:border-default' }"
     >
       <template #header="{ collapsed }">
@@ -134,5 +151,7 @@ const groups = computed(() => {
     <UDashboardSearch :groups="groups" />
 
     <slot />
+
+    <DashboardStatusDock />
   </UDashboardGroup>
 </template>
