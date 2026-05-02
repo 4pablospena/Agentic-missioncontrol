@@ -1,297 +1,211 @@
 <script setup lang="ts">
-import type { OpenClawHealth } from '~/models/openclaw'
-import type { NamedSeriesPoint } from '~/models/metric'
-
 definePageMeta({ layout: 'dashboard' })
 
-const { events, connected } = useRealtimeEvents()
-const { agents, health, error, isLoading, refresh } = useAgents({ events })
+const { events } = useRealtimeEvents()
+const { agents, isLoading, refresh: refreshAgents } = useAgents({ events })
+const {
+  alerts,
+  pending: alertsPending,
+  refresh: refreshAlerts,
+} = useAlerts({ events })
 const {
   logs: recentLogs,
   pending: logsPending,
   refresh: refreshLogs,
-} = useLogs({ events, listLimit: 12 })
+} = useLogs({ events, listLimit: 5 })
 const {
-  alerts,
-  pending: alertsPending,
-  acknowledge,
-  ackPendingId,
-  refresh: refreshAlerts,
-} = useAlerts({ events })
-const {
-  tokens,
-  models,
-  sessions,
-  errors,
-  pending: metricsPending,
-  refresh: refreshMetrics,
-} = useMetrics({ events })
+  grouped: tasksByStatus,
+  pending: tasksPending,
+  loadTasks,
+} = useTasks({ events })
 
-const sessionIdInput = ref('demo-session')
-const {
-  events: timelineEvents,
-  pending: timelinePending,
-  refresh: refreshTimeline,
-} = useSessionTimeline(sessionIdInput)
-
-const { data: ocHealth, refresh: refreshOcHealth } = useFetch<OpenClawHealth>(
-  '/api/openclaw/health',
-  { server: false, default: () => null },
+const openAlerts = computed(() => alerts.value.filter(a => !a.acknowledged))
+const criticalAlerts = computed(() =>
+  openAlerts.value.filter(a => a.severity === 'critical'),
 )
 
-const bridgeBadge = computed(() => {
-  const h = ocHealth.value
-  if (h === null || h === undefined)
-    return { label: 'OpenClaw bridge', color: 'neutral' as const, text: '…' }
-  const mode = h.bridgeMode === 'mock' ? 'mock gateway' : 'live gateway'
-  if (h.bridgeMode === 'mock')
-    return { label: 'OpenClaw bridge', color: 'neutral' as const, text: mode }
-  if (h.gatewayReachable === true)
-    return { label: 'OpenClaw bridge', color: 'success' as const, text: mode }
-  return { label: 'OpenClaw bridge', color: 'error' as const, text: mode }
+const agentsTotals = computed(() => {
+  const list = agents.value
+  const ok = list.filter(a => a.status === 'idle' || a.status === 'running').length
+  const degraded = list.filter(a => a.status === 'error' || a.status === 'offline').length
+  return { ok, degraded, total: list.length }
 })
 
-const tokenSeries = computed<NamedSeriesPoint[]>(() => {
-  const t = tokens.value
-  if (!t)
-    return []
-  return t.byAgent.map(a => ({ label: a.agentName, value: a.tokens }))
-})
-
-const tokenMax = computed(() =>
-  Math.max(1, ...tokenSeries.value.map(s => s.value)),
+const queuedTasks = computed(
+  () => (tasksByStatus.value.queued?.length ?? 0) + (tasksByStatus.value.running?.length ?? 0),
 )
 
-function dashboardRefresh() {
-  void refresh()
-  void refreshLogs()
+const overallStatus = computed<{ color: 'success' | 'warning' | 'error', label: string }>(() => {
+  if (criticalAlerts.value.length > 0)
+    return { color: 'error', label: 'Critical alerts open' }
+  if (agentsTotals.value.degraded > 0 || openAlerts.value.length > 0)
+    return { color: 'warning', label: 'Attention needed' }
+  return { color: 'success', label: 'All systems nominal' }
+})
+
+const activityOpen = ref(false)
+
+function refreshAll() {
+  void refreshAgents()
   void refreshAlerts()
-  void refreshMetrics()
-  void refreshTimeline()
-  void refreshOcHealth()
+  void refreshLogs()
+  void loadTasks()
 }
 
 onMounted(() => {
-  dashboardRefresh()
+  refreshAll()
 })
 </script>
 
 <template>
   <UDashboardPanel id="home">
     <template #header>
-      <UDashboardNavbar title="Mission Control" :ui="{ right: 'gap-3' }">
+      <UDashboardNavbar title="Mission Control" :ui="{ right: 'gap-2' }">
         <template #leading>
           <UDashboardSidebarCollapse />
         </template>
         <template #right>
-          <UBadge :color="connected ? 'success' : 'neutral'" variant="subtle" size="sm">
-            Realtime {{ connected ? 'live' : 'offline' }}
-          </UBadge>
           <UButton
             icon="i-lucide-refresh-cw"
             label="Refresh"
             color="neutral"
             variant="outline"
             size="sm"
-            :loading="isLoading || metricsPending || alertsPending"
-            @click="dashboardRefresh"
+            :loading="isLoading || alertsPending || logsPending || tasksPending"
+            @click="refreshAll"
           />
         </template>
       </UDashboardNavbar>
     </template>
 
     <template #body>
-      <div class="flex flex-col gap-8">
+      <div class="flex flex-col gap-6">
         <section class="page-toolbar pb-2">
-          <p class="text-muted max-w-3xl text-sm leading-snug">
-            Control center overview: agents from the bridge, metrics, alerts, and recent telemetry. Mirrors a lightweight TenacitOS-style shell—without host filesystem coupling.
+          <p class="text-muted text-sm leading-snug">
+            System overview at a glance.
           </p>
         </section>
 
-        <section class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <MetricsMetricCard
-            title="Agents"
-            :value="agents.length"
-            description="From OpenClaw bridge"
-          />
-          <MetricsMetricCard
-            title="Total tokens"
-            :value="tokens?.total ?? '—'"
-            description="Sum across listed agents"
-          />
+        <section
+          class="panel-shell flex flex-wrap items-center gap-3 rounded-xl px-4 py-3"
+          data-testid="overall-status"
+        >
+          <UBadge :color="overallStatus.color" variant="subtle" size="sm">
+            {{ overallStatus.label }}
+          </UBadge>
+          <span class="text-muted text-sm">
+            {{ agentsTotals.ok }}/{{ agentsTotals.total }} agents healthy
+          </span>
+          <span v-if="openAlerts.length" class="text-muted text-sm">
+            · {{ openAlerts.length }} open alerts
+          </span>
+          <span v-if="queuedTasks" class="text-muted text-sm">
+            · {{ queuedTasks }} active tasks
+          </span>
+        </section>
+
+        <section class="grid gap-4 sm:grid-cols-3">
           <MetricsMetricCard
             title="Open alerts"
-            :value="alerts.filter(a => !a.acknowledged).length"
-            description="Unacknowledged"
+            :value="openAlerts.length"
+            :description="criticalAlerts.length ? `${criticalAlerts.length} critical` : 'Unacknowledged'"
           />
           <MetricsMetricCard
-            title="Recent logs"
-            :value="recentLogs.length"
-            description="Last 12 rows"
+            title="Agents"
+            :value="`${agentsTotals.ok}/${agentsTotals.total}`"
+            :description="agentsTotals.degraded ? `${agentsTotals.degraded} degraded` : 'All healthy'"
+          />
+          <MetricsMetricCard
+            title="Active tasks"
+            :value="queuedTasks"
+            description="Queued + running"
           />
         </section>
 
-        <section class="flex flex-wrap items-center gap-3 px-4 py-3 panel-shell rounded-xl font-metric text-[11px] sm:text-xs">
-          <span class="text-dimmed font-medium uppercase tracking-wide">Bridge</span>
-          <UBadge :color="bridgeBadge.color" variant="subtle" size="sm">
-            {{ bridgeBadge.text }}
-          </UBadge>
-          <span v-if="ocHealth?.gatewayStatus != null" class="text-muted tabular-nums">
-            HTTP {{ ocHealth.gatewayStatus }}
-          </span>
-          <span v-if="ocHealth?.message" class="text-muted max-w-xl truncate">{{ ocHealth.message }}</span>
-        </section>
-
-        <div class="grid gap-6 xl:grid-cols-12">
-          <UCard class="shadow-none ring-0 xl:col-span-7 panel-shell" :ui="{ body: 'p-4 sm:p-5' }">
-            <template #header>
-              <h2 class="text-highlighted font-semibold">
-                Agents
-              </h2>
-            </template>
-            <UAlert
-              v-if="error"
+        <section
+          v-if="criticalAlerts.length || queuedTasks"
+          class="panel-shell flex flex-wrap items-center justify-between gap-3 rounded-xl px-4 py-3"
+        >
+          <div class="text-sm">
+            <p v-if="criticalAlerts.length" class="text-highlighted font-medium">
+              {{ criticalAlerts.length }} critical alert{{ criticalAlerts.length === 1 ? '' : 's' }} need acknowledgement.
+            </p>
+            <p v-else-if="queuedTasks" class="text-highlighted font-medium">
+              {{ queuedTasks }} task{{ queuedTasks === 1 ? '' : 's' }} in flight.
+            </p>
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <UButton
+              v-if="criticalAlerts.length"
+              to="/logs"
+              label="Ver alertas"
               color="error"
               variant="soft"
-              title="Agents"
-              :description="error"
-              class="mb-4"
+              size="sm"
+              icon="i-lucide-bell"
+              data-testid="cta-alerts"
             />
-            <div class="grid gap-3 sm:grid-cols-2">
-              <AgentsAgentSummaryCard v-for="a in agents" :key="a.id" :agent="a" dense />
-              <p v-if="!agents.length && !isLoading" class="text-muted text-sm sm:col-span-2">
-                No agents loaded.
-              </p>
-            </div>
-          </UCard>
-
-          <UCard class="shadow-none ring-0 xl:col-span-5 panel-shell" :ui="{ body: 'p-4 sm:p-5' }">
-            <template #header>
-              <h2 class="text-highlighted font-semibold">
-                Token usage
-              </h2>
-            </template>
-            <MetricsTokenUsageChart :series="tokenSeries" :max="tokenMax" />
-          </UCard>
-        </div>
-
-        <div class="grid gap-6 xl:grid-cols-2">
-          <UCard class="shadow-none ring-0 panel-shell" :ui="{ body: 'p-4 sm:p-5' }">
-            <template #header>
-              <div class="flex flex-wrap items-center justify-between gap-2">
-                <h2 class="text-highlighted font-semibold">
-                  Alerts
-                </h2>
-              </div>
-            </template>
-            <AlertsAlertList
-              :alerts="alerts.slice(0, 8)"
-              :loading="alertsPending"
-              :acknowledge-pending-id="ackPendingId"
-              @acknowledge="acknowledge($event)"
-            />
-          </UCard>
-
-          <UCard class="shadow-none ring-0 panel-shell" :ui="{ body: 'p-4 sm:p-5' }">
-            <template #header>
-              <h2 class="text-highlighted font-semibold">
-                Models & sessions
-              </h2>
-            </template>
-            <div class="grid gap-4 sm:grid-cols-2">
-              <div>
-                <p class="text-muted mb-2 text-xs font-medium uppercase">
-                  By model
-                </p>
-                <ul class="text-muted space-y-1 text-sm">
-                  <li v-for="m in models" :key="m.model">
-                    {{ m.model }}: {{ m.tokens }}
-                  </li>
-                  <li v-if="!models.length">
-                    —
-                  </li>
-                </ul>
-              </div>
-              <div>
-                <p class="text-muted mb-2 text-xs font-medium uppercase">
-                  Agent status
-                </p>
-                <ul class="text-muted space-y-1 text-sm">
-                  <li v-for="s in sessions" :key="s.status">
-                    {{ s.status }}: {{ s.count }}
-                  </li>
-                  <li v-if="!sessions.length">
-                    —
-                  </li>
-                </ul>
-              </div>
-            </div>
-            <div class="mt-4">
-              <p class="text-muted mb-2 text-xs font-medium uppercase">
-                Unacked alert severity
-              </p>
-              <ul class="text-muted flex flex-wrap gap-3 text-sm">
-                <li v-for="e in errors" :key="e.severity">
-                  {{ e.severity }}: {{ e.count }}
-                </li>
-                <li v-if="!errors.length">
-                  —
-                </li>
-              </ul>
-            </div>
-          </UCard>
-        </div>
-
-        <UCard class="shadow-none ring-0 panel-shell" :ui="{ body: 'p-4 sm:p-5' }">
-          <template #header>
-            <h2 class="text-highlighted font-semibold">
-              Recent logs
-            </h2>
-          </template>
-          <LogsLogViewer compact layout="timeline" :logs="recentLogs" :pending="logsPending" />
-        </UCard>
-
-        <UCard class="shadow-none ring-0 panel-shell" :ui="{ body: 'p-4 sm:p-5' }">
-          <template #header>
-            <h2 class="text-highlighted font-semibold">
-              Session timeline
-            </h2>
-          </template>
-          <p class="text-muted mb-3 text-sm">
-            Uses log metadata
-            <UKbd size="xs">
-              sessionId
-            </UKbd>
-            · try
-            <UKbd size="xs">
-              demo-session
-            </UKbd>
-            after adding a sample log from the Logs page.
-          </p>
-          <div class="mb-4 flex flex-wrap items-end gap-2">
-            <UFormField label="Session id" class="min-w-[200px] flex-1">
-              <UInput v-model="sessionIdInput" />
-            </UFormField>
             <UButton
-              label="Reload timeline"
+              v-if="queuedTasks"
+              to="/tasks"
+              label="Ver tareas"
               color="neutral"
               variant="outline"
               size="sm"
-              :loading="timelinePending"
-              @click="refreshTimeline"
+              icon="i-lucide-square-kanban"
+              data-testid="cta-tasks"
             />
           </div>
-          <TimelineEventTimeline :events="timelineEvents" />
-        </UCard>
+        </section>
 
-        <UCard v-if="health" class="shadow-none ring-0 panel-shell" :ui="{ body: 'p-4 sm:p-5' }">
-          <template #header>
-            <h2 class="text-highlighted font-semibold">
-              Bridge health (agents service)
-            </h2>
-          </template>
-          <pre class="bg-muted overflow-auto rounded-lg p-4 font-metric text-[11px] ring ring-default sm:text-xs">{{ JSON.stringify(health, null, 2) }}</pre>
-        </UCard>
+        <section class="panel-shell rounded-xl">
+          <UCollapsible v-model:open="activityOpen" :ui="{ root: 'p-0' }">
+            <UButton
+              :label="activityOpen ? 'Hide recent activity' : 'Show recent activity'"
+              color="neutral"
+              variant="ghost"
+              size="sm"
+              :icon="activityOpen ? 'i-lucide-chevron-down' : 'i-lucide-chevron-right'"
+              class="w-full justify-between rounded-xl px-4 py-3"
+              :ui="{ trailingIcon: 'hidden' }"
+            />
+            <template #content>
+              <div class="border-default border-t px-4 py-4">
+                <LogsLogViewer compact layout="timeline" :logs="recentLogs" :pending="logsPending" />
+                <div class="mt-3 flex justify-end">
+                  <UButton
+                    to="/logs"
+                    label="Open logs"
+                    color="neutral"
+                    variant="ghost"
+                    size="xs"
+                    trailing-icon="i-lucide-arrow-up-right"
+                  />
+                </div>
+              </div>
+            </template>
+          </UCollapsible>
+        </section>
+
+        <section class="text-muted flex flex-wrap items-center justify-end gap-3 text-xs">
+          <span>Need more detail?</span>
+          <UButton
+            to="/monitoring"
+            label="Monitoring"
+            color="neutral"
+            variant="ghost"
+            size="xs"
+            icon="i-lucide-activity"
+          />
+          <UButton
+            to="/diagnostics"
+            label="Diagnostics"
+            color="neutral"
+            variant="ghost"
+            size="xs"
+            icon="i-lucide-wrench"
+          />
+        </section>
       </div>
     </template>
   </UDashboardPanel>

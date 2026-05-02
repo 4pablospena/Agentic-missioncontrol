@@ -6,7 +6,7 @@ definePageMeta({ layout: 'dashboard' })
 const route = useRoute()
 const router = useRouter()
 
-const { events, connected } = useRealtimeEvents()
+const { events } = useRealtimeEvents()
 const {
   logs,
   filters,
@@ -128,50 +128,44 @@ async function addSampleLog() {
     </template>
 
     <template #body>
-      <UCard class="shadow-none ring-0 panel-shell" :ui="{ body: 'p-4 sm:p-5' }">
-        <template #header>
-          <div class="flex flex-wrap items-center justify-between gap-2">
-            <div>
-              <h1 class="text-highlighted font-semibold tracking-tight">
-                Logs
-              </h1>
-              <p class="text-muted mt-1 max-w-2xl text-sm leading-snug">
-                Structured feed filtered by bridge metadata. Matches the observability pane of the shell below.
-              </p>
-            </div>
-            <div class="flex items-center gap-2">
-              <UBadge :color="connected ? 'success' : 'neutral'" variant="subtle">
-                Realtime {{ connected ? 'connected' : 'disconnected' }}
-              </UBadge>
-              <span class="text-muted text-xs">
-                Filters sync to URL on Apply ·
-                <UKbd size="sm">
-                  log.created
-                </UKbd>
-              </span>
-            </div>
-          </div>
-        </template>
+      <div class="flex flex-col gap-6">
+        <section class="page-toolbar flex flex-wrap items-center justify-between gap-3 pb-2">
+          <p class="text-muted text-sm leading-snug">
+            Structured feed filtered by bridge metadata.
+          </p>
+          <UTooltip text="Filters sync to URL on Apply. Realtime updates fire on log.created events.">
+            <UButton
+              icon="i-lucide-info"
+              color="neutral"
+              variant="ghost"
+              size="xs"
+              square
+              aria-label="How log filters work"
+            />
+          </UTooltip>
+        </section>
 
-        <LogsLogFilters
-          v-model="filters"
-          :agent-options="agentOptions"
-          class="mb-6"
-          @apply="onApply"
-          @reset="onReset"
-        />
+        <UCard class="panel-shell" :ui="{ root: 'shadow-none ring-0', body: 'p-4 sm:p-5' }">
+          <LogsLogFilters
+            v-model="filters"
+            :agent-options="agentOptions"
+            class="mb-6"
+            @apply="onApply"
+            @reset="onReset"
+          />
 
-        <UAlert
-          v-if="errorMsg"
-          color="error"
-          variant="soft"
-          title="Could not load logs"
-          :description="errorMsg"
-          class="mb-4"
-        />
+          <UAlert
+            v-if="errorMsg"
+            color="error"
+            variant="soft"
+            title="Could not load logs"
+            :description="errorMsg"
+            class="mb-4"
+          />
 
-        <LogsLogViewer :logs="logs" :pending="pending" />
-      </UCard>
+          <LogsLogViewer :logs="logs" :pending="pending" />
+        </UCard>
+      </div>
     </template>
   </UDashboardPanel>
 </template>

@@ -8,7 +8,7 @@ definePageMeta({ layout: 'dashboard' })
 
 const toast = useToast()
 
-const { events, connected } = useRealtimeEvents()
+const { events } = useRealtimeEvents()
 const { agents, refresh: refreshAgents } = useAgents({ events })
 
 const {
@@ -197,18 +197,23 @@ async function downloadSnapshotJson(id: string) {
 
     <template #body>
       <div class="flex flex-col gap-6">
-        <UCard>
-          <template #header>
-            <div class="flex flex-wrap items-center justify-between gap-2">
-              <h1 class="text-highlighted font-semibold">
-                Semantic memory
-              </h1>
-              <UBadge :color="connected ? 'success' : 'neutral'" variant="subtle">
-                Realtime {{ connected ? 'connected' : 'disconnected' }}
-              </UBadge>
-            </div>
-          </template>
+        <section class="page-toolbar flex flex-wrap items-center justify-between gap-3 pb-2">
+          <p class="text-muted text-sm leading-snug">
+            Search, inject and snapshot the semantic memory store.
+          </p>
+          <UTooltip text="Searches use cosine similarity. Snapshots export the current filters as JSON.">
+            <UButton
+              icon="i-lucide-info"
+              color="neutral"
+              variant="ghost"
+              size="xs"
+              square
+              aria-label="How memory works"
+            />
+          </UTooltip>
+        </section>
 
+        <UCard class="panel-shell" :ui="{ root: 'shadow-none ring-0' }">
           <UAlert
             v-if="errorMsg"
             color="error"

@@ -103,11 +103,11 @@
   height: 0.35rem;
 }
 
-/* Dashboard canvas: RevX-like violet/cyan glow (dark mode only). Layout unchanged. */
+/* Dashboard canvas: RevX-like yellow/cyan glow (dark mode only). Layout unchanged. */
 .dark .dashboard-canvas {
   background-color: #07070c;
   background-image:
-    radial-gradient(ellipse 130% 90% at 50% -25%, rgb(139 92 246 / 0.14), transparent 55%),
+    radial-gradient(ellipse 130% 90% at 50% -25%, rgb(234 179 8 / 0.10), transparent 55%),
     radial-gradient(ellipse 100% 70% at 100% 40%, rgb(34 211 238 / 0.09), transparent 52%),
-    radial-gradient(ellipse 80% 55% at 0% 85%, rgb(167 139 250 / 0.07), transparent 48%);
+    radial-gradient(ellipse 80% 55% at 0% 85%, rgb(250 204 21 / 0.06), transparent 48%);
 }
