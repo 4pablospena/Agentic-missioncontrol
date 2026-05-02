@@ -52,6 +52,12 @@ export default defineNuxtConfig({
       Number.parseInt(process.env.NUXT_MEMORY_SEMANTIC_CONTEXT_LIMIT ?? '5', 10) || 5,
     public: {
       apiBase: process.env.NUXT_PUBLIC_API_BASE ?? '',
+      /**
+       * Hides the Diagnostics route (sidebar entry, command palette, Overview footer button)
+       * and serves a 404 from `/diagnostics` when set to `false`. Default `true` so local
+       * dev keeps full visibility; flip to `false` in production deployments.
+       */
+      showDiagnostics: process.env.NUXT_PUBLIC_SHOW_DIAGNOSTICS !== 'false',
     },
   },
 

@@ -44,9 +44,12 @@ const rootUi = computed(() =>
         @retry="emit('retry', $event)"
         @cancel="emit('cancel', $event)"
       />
-      <p v-if="!tasks.length" class="text-muted px-1 py-6 text-center text-xs">
-        No tasks
-      </p>
+      <CommonEmptyState
+        v-if="!tasks.length"
+        :title="`No ${title.toLowerCase()} tasks`"
+        icon="i-lucide-square-kanban"
+        variant="compact"
+      />
     </div>
   </div>
 </template>

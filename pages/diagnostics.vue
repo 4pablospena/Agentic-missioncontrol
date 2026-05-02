@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { TimelineEvent } from '~/models/timeline'
 
-definePageMeta({ layout: 'dashboard' })
+definePageMeta({ layout: 'dashboard', middleware: 'diagnostics-flag' })
 
 const { bridge, bridgeLabel, refresh: refreshSystem } = useSystemStatus()
 const { health: agentsHealth, refresh: refreshAgents } = useAgents()
@@ -90,9 +90,17 @@ onMounted(() => {
           </template>
           <UCollapsible v-model:open="jsonOpen">
             <template #content>
+              <CommonEmptyState
+                v-if="!agentsHealth"
+                title="No bridge data yet."
+                description="Hit Refresh to fetch the gateway response."
+                icon="i-lucide-database"
+                variant="compact"
+              />
               <pre
+                v-else
                 class="bg-muted font-metric ring-default overflow-auto rounded-lg p-4 text-[11px] ring sm:text-xs"
-              >{{ agentsHealth ? JSON.stringify(agentsHealth, null, 2) : 'No data yet — refresh to load.' }}</pre>
+              >{{ JSON.stringify(agentsHealth, null, 2) }}</pre>
             </template>
           </UCollapsible>
           <p v-if="!jsonOpen" class="text-muted text-sm">

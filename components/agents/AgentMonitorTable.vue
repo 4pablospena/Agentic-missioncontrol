@@ -75,13 +75,18 @@ withDefaults(defineProps<{
             </td>
           </tr>
           <tr v-if="!agents.length && !loading">
-            <td colspan="7" class="text-muted py-6 text-center">
-              No agents loaded.
+            <td colspan="7" class="py-6">
+              <CommonEmptyState
+                title="No agents yet."
+                description="Connect a worker or check the bridge to see agents here."
+                icon="i-lucide-bot"
+                variant="compact"
+              />
             </td>
           </tr>
           <tr v-if="loading && !agents.length">
-            <td colspan="7" class="text-muted py-6 text-center">
-              Loading…
+            <td colspan="7" class="py-6">
+              <CommonEmptyState loading title="Loading agents…" variant="compact" />
             </td>
           </tr>
         </tbody>

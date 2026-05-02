@@ -42,16 +42,25 @@ const quickLinks = [
     <div
       class="text-muted font-metric hidden min-w-0 flex-1 items-center gap-3 text-[11px] sm:flex md:text-xs"
       data-testid="dock-system"
+      role="status"
+      aria-live="polite"
+      aria-label="System status"
     >
-      <span class="text-highlighted shrink-0 tabular-nums">{{ clock }}</span>
-      <span class="flex items-center gap-1.5">
-        <span class="hidden lg:inline">WS</span>
+      <span class="text-highlighted shrink-0 tabular-nums" aria-label="Current time">{{ clock }}</span>
+      <span
+        class="flex items-center gap-1.5"
+        :aria-label="`Realtime websocket: ${realtimeConnected ? 'live' : 'off'}`"
+      >
+        <span class="hidden lg:inline" aria-hidden="true">WS</span>
         <UBadge :color="realtimeConnected ? 'success' : 'neutral'" variant="subtle" size="xs">
           {{ realtimeConnected ? 'live' : 'off' }}
         </UBadge>
       </span>
-      <span class="flex items-center gap-1.5">
-        <span class="hidden xl:inline">Bridge</span>
+      <span
+        class="flex items-center gap-1.5"
+        :aria-label="`Bridge: ${bridgeLabel.text}`"
+      >
+        <span class="hidden xl:inline" aria-hidden="true">Bridge</span>
         <UBadge :color="bridgeLabel.color" variant="subtle" size="xs">
           {{ bridgeLabel.text }}
         </UBadge>
@@ -66,6 +75,7 @@ const quickLinks = [
         <UButton
           :to="item.to"
           :icon="item.icon"
+          :aria-label="item.label"
           color="neutral"
           variant="ghost"
           size="sm"
@@ -80,6 +90,8 @@ const quickLinks = [
           size="sm"
           square
           :collapsed="true"
+          aria-label="Open command palette"
+          aria-keyshortcuts="Meta+K"
           class="text-muted hover:text-highlighted bg-transparent ring-0"
         />
       </UTooltip>

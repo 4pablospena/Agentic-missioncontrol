@@ -62,12 +62,21 @@ onMounted(() => {
                 :agent="a"
                 dense
               />
-              <p v-if="!agents.length && !isLoading" class="text-muted col-span-full py-4 text-center text-sm">
-                No agents loaded.
-              </p>
-              <p v-if="isLoading && !agents.length" class="text-muted col-span-full py-4 text-center text-sm">
-                Loading…
-              </p>
+              <CommonEmptyState
+                v-if="!agents.length && !isLoading"
+                title="No agents yet."
+                description="Connect a worker or check the bridge to see agents here."
+                icon="i-lucide-bot"
+                variant="compact"
+                class="col-span-full"
+              />
+              <CommonEmptyState
+                v-if="isLoading && !agents.length"
+                loading
+                title="Loading agents…"
+                variant="compact"
+                class="col-span-full"
+              />
             </div>
           </div>
         </section>

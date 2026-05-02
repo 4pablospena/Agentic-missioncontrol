@@ -31,8 +31,12 @@ const emit = defineEmits<{
         <span class="text-dimmed text-xs">{{ c.updatedAt.slice(0, 10) }}</span>
       </div>
     </UButton>
-    <p v-if="!conversations.length" class="text-muted px-1 text-sm">
-      No conversations yet.
-    </p>
+    <CommonEmptyState
+      v-if="!conversations.length"
+      title="No conversations yet."
+      description="Pick an agent and start a thread to see it here."
+      icon="i-lucide-message-square"
+      variant="compact"
+    />
   </div>
 </template>

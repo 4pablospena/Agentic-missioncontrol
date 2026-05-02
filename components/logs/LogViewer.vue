@@ -21,12 +21,19 @@ withDefaults(defineProps<{
       :class="{ 'log-feed--compact gap-2': compact }"
     >
       <LogsLogRow v-for="row in logs" :key="row.id" variant="feed" :row="row" />
-      <p v-if="!logs.length && !pending" class="text-muted px-2 py-8 text-center text-sm">
-        No log entries match.
-      </p>
-      <p v-if="pending && !logs.length" class="text-muted px-2 py-8 text-center text-sm">
-        Loading…
-      </p>
+      <CommonEmptyState
+        v-if="!logs.length && !pending"
+        title="No log entries match."
+        description="Adjust the filters above to widen the search."
+        icon="i-lucide-scroll-text"
+        :variant="compact ? 'compact' : 'default'"
+      />
+      <CommonEmptyState
+        v-if="pending && !logs.length"
+        loading
+        title="Loading logs…"
+        :variant="compact ? 'compact' : 'default'"
+      />
     </div>
 
     <div v-else class="overflow-x-auto">
@@ -50,13 +57,18 @@ withDefaults(defineProps<{
         <tbody class="divide-default divide-y">
           <LogsLogRow v-for="row in logs" :key="row.id" variant="table" :row="row" />
           <tr v-if="!logs.length && !pending">
-            <td colspan="4" class="text-muted py-6 text-center">
-              No log entries match.
+            <td colspan="4" class="py-6">
+              <CommonEmptyState
+                title="No log entries match."
+                description="Adjust the filters above to widen the search."
+                icon="i-lucide-scroll-text"
+                variant="compact"
+              />
             </td>
           </tr>
           <tr v-if="pending && !logs.length">
-            <td colspan="4" class="text-muted py-6 text-center">
-              Loading…
+            <td colspan="4" class="py-6">
+              <CommonEmptyState loading title="Loading logs…" variant="compact" />
             </td>
           </tr>
         </tbody>
