@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto'
 import type { Agent } from '~/models/agent'
 import type {
   AgentCommandResult,
@@ -5,29 +6,107 @@ import type {
   OpenClawHealth,
   SendAgentCommandPayload,
 } from '~/models/openclaw'
+import {
+  extractChatAssistantText,
+  normalizeAgentsListResult,
+} from '../utils/openclaw-gateway-jsonrpc'
+import { OpenClawWsGateway } from '../utils/openclaw-gateway-ws'
 import { createLogEntry } from './logger.server'
 
 export interface GatewayBridgeOptions {
-  baseUrl: string
-  token: string
+  wsUrl: string
+  /** HTTP origin for dashboard / health (same host as gateway). */
+  httpBase: string
+  token?: string
+}
+
+let sharedWsGateway: OpenClawWsGateway | null = null
+let sharedWsKey = ''
+
+function getSharedWsGateway(opts: { wsUrl: string, token?: string }): OpenClawWsGateway {
+  const key = `${opts.wsUrl}\0${opts.token ?? ''}`
+  if (sharedWsGateway && sharedWsKey === key)
+    return sharedWsGateway
+  sharedWsGateway?.disconnect()
+  sharedWsGateway = new OpenClawWsGateway(opts)
+  sharedWsKey = key
+  return sharedWsGateway
+}
+
+function authHeaders(token?: string): Record<string, string> {
+  const t = token?.trim()
+  return t ? { Authorization: `Bearer ${t}` } : {}
 }
 
 export function createGatewayOpenClawBridge(options: GatewayBridgeOptions): OpenClawBridge {
-  const base = options.baseUrl.replace(/\/$/, '')
+  const httpBase = options.httpBase.replace(/\/$/, '').trim()
+  const ws = getSharedWsGateway({ wsUrl: options.wsUrl, token: options.token })
+  const auth = authHeaders(options.token)
 
-  const headers: HeadersInit = {
-    ...(options.token ? { Authorization: `Bearer ${options.token}` } : {}),
+  async function listAgentsRpc(): Promise<Agent[]> {
+    const result = await ws.request('agents.list', {})
+    const agents = normalizeAgentsListResult(result)
+    await createLogEntry({
+      level: 'info',
+      message: 'gateway.agents.list',
+      metadata: { count: agents.length, wsUrl: options.wsUrl },
+    })
+    return agents
   }
 
   return {
     async health(): Promise<OpenClawHealth> {
+      if (!httpBase) {
+        try {
+          await ws.ensureConnected()
+          return {
+            bridgeMode: 'gateway',
+            gatewayReachable: true,
+            message: 'Gateway WebSocket connected',
+          }
+        }
+        catch (e) {
+          const msg = e instanceof Error ? e.message : 'unknown error'
+          return {
+            bridgeMode: 'gateway',
+            gatewayReachable: false,
+            message: msg,
+          }
+        }
+      }
       try {
-        const res = await fetch(`${base}/health`, { headers })
+        const res = await fetch(`${httpBase}/health`, { headers: auth })
+        if (res.ok) {
+          return {
+            bridgeMode: 'gateway',
+            gatewayReachable: true,
+            gatewayStatus: res.status,
+            message: 'Gateway health endpoint responded',
+          }
+        }
+      }
+      catch {
+        /* try root */
+      }
+      try {
+        const res = await fetch(`${httpBase}/`, { headers: auth, redirect: 'manual' })
+        const ok = res.ok || res.status === 302 || res.status === 301
         return {
           bridgeMode: 'gateway',
-          gatewayReachable: res.ok,
+          gatewayReachable: ok,
           gatewayStatus: res.status,
-          message: res.ok ? 'Gateway responded' : `HTTP ${res.status}`,
+          message: ok ? 'Gateway root responded' : `HTTP ${res.status}`,
+        }
+      }
+      catch {
+        /* fallback: WS only */
+      }
+      try {
+        await ws.ensureConnected()
+        return {
+          bridgeMode: 'gateway',
+          gatewayReachable: true,
+          message: 'Gateway WebSocket connected (HTTP health unavailable)',
         }
       }
       catch (e) {
@@ -41,40 +120,95 @@ export function createGatewayOpenClawBridge(options: GatewayBridgeOptions): Open
     },
 
     async listAgents(): Promise<Agent[]> {
-      await createLogEntry({
-        level: 'warn',
-        message: 'gateway.listAgents not implemented: use mock or extend bridge',
-        metadata: { baseUrl: base },
-      })
-      throw createError({
-        statusCode: 501,
-        statusMessage: 'Gateway bridge listing not wired yet',
-      })
+      return listAgentsRpc()
     },
 
     async getAgent(agentId: string): Promise<Agent | null> {
-      await createLogEntry({
-        level: 'warn',
-        message: 'gateway.getAgent not implemented',
-        metadata: { agentId },
-      })
-      throw createError({
-        statusCode: 501,
-        statusMessage: 'Gateway bridge getAgent not wired yet',
-      })
+      const id = agentId.trim()
+      if (!id)
+        return null
+      try {
+        const single = await ws.request('agents.get', { agentId: id })
+        const candidates = normalizeAgentsListResult(single)
+        const hit = candidates.find(a => a.id === id)
+        if (hit)
+          return hit
+      }
+      catch {
+        /* agents.get optional — fallback to list */
+      }
+      const agents = await listAgentsRpc()
+      return agents.find(a => a.id === id) ?? null
     },
 
     async sendCommand(agentId: string, payload: SendAgentCommandPayload): Promise<AgentCommandResult> {
+      const commandId = randomUUID()
+      const aid = agentId.trim()
+
       await createLogEntry({
-        agentId,
+        agentId: aid,
         level: 'info',
         message: `gateway.command.${payload.command}`,
-        metadata: { agentId, payload },
+        metadata: { commandId, input: payload.input },
       })
-      throw createError({
-        statusCode: 501,
-        statusMessage: 'Gateway command execution not wired yet (see ADR: POST /v1/responses or tools invoke)',
-      })
+
+      if (payload.command === 'chat.message') {
+        const input = payload.input as Record<string, unknown> | undefined
+        const message = String(input?.content ?? '').trim()
+        if (!message) {
+          return {
+            commandId,
+            agentId: aid,
+            command: payload.command,
+            ok: false,
+            message: 'chat.message requires input.content',
+          }
+        }
+        const sessionId = input?.sessionId ?? input?.conversationId
+        const params: Record<string, unknown> = {
+          agentId: aid,
+          message,
+        }
+        if (sessionId != null && String(sessionId).trim())
+          params.sessionId = String(sessionId).trim()
+        if (Array.isArray(input?.contextSnippets))
+          params.contextSnippets = input.contextSnippets
+        if (Array.isArray(input?.recentMessages))
+          params.recentMessages = input.recentMessages
+
+        const result = await ws.request('chat.send', params)
+        const responseText = extractChatAssistantText(result)
+
+        return {
+          commandId,
+          agentId: aid,
+          command: payload.command,
+          ok: true,
+          message: 'Gateway chat.send completed',
+          detail: {
+            response: responseText,
+            rawResult: result,
+          },
+        }
+      }
+
+      const params: Record<string, unknown> = {
+        agentId: aid,
+        ...(payload.input ?? {}),
+      }
+      const method = payload.command as string
+      const result = await ws.request(method, params)
+
+      return {
+        commandId,
+        agentId: aid,
+        command: payload.command,
+        ok: true,
+        message: `Gateway RPC ${method} completed`,
+        detail: typeof result === 'object' && result !== null
+          ? (result as Record<string, unknown>)
+          : { result },
+      }
     },
   }
 }

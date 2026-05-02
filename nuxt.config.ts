@@ -21,6 +21,7 @@ export default defineNuxtConfig({
   runtimeConfig: {
     openclawBridgeMode: process.env.OPENCLAW_BRIDGE_MODE ?? 'mock',
     openclawGatewayUrl: process.env.OPENCLAW_GATEWAY_URL ?? '',
+    openclawGatewayWs: process.env.OPENCLAW_GATEWAY_WS ?? '',
     openclawGatewayToken: process.env.OPENCLAW_GATEWAY_TOKEN ?? '',
     databasePath: process.env.DATABASE_PATH ?? './data/mission-control.db',
     /**

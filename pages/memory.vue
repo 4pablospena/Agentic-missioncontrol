@@ -26,6 +26,7 @@ const {
 } = useMemory({ events })
 
 const snapshots = useMemorySnapshots({ events })
+const snapshotsPending = computed(() => unref(snapshots.pending))
 
 const memoryTab = ref<'explore' | 'inject' | 'snapshots'>('explore')
 const tabItems = [
@@ -186,7 +187,7 @@ async function downloadSnapshotJson(id: string) {
             color="neutral"
             variant="ghost"
             size="sm"
-            :loading="pending || snapshots.pending"
+            :loading="pending || snapshotsPending"
             data-testid="memory-refresh"
             @click="onRefreshMemory"
           />
@@ -306,8 +307,8 @@ async function downloadSnapshotJson(id: string) {
 
             <template #snapshots>
               <div class="flex flex-col gap-6 pt-4">
-                <SnapshotActions
-                  :export-pending="exportBusy || snapshots.pending"
+                <MemorySnapshotActions
+                  :export-pending="exportBusy || snapshotsPending"
                   :import-pending="importBusy"
                   @export="onExport"
                   @import-raw="onImportRaw"

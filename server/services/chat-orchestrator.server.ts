@@ -81,6 +81,7 @@ export async function orchestrateAgentChatMessage(
       command: 'chat.message',
       input: {
         content: payload.content,
+        conversationId,
         contextSnippets: snippets,
         recentMessages: recentTail.map(m => ({ role: m.role, content: m.content })),
       },
