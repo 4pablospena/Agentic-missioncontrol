@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { NavigationMenuItem } from '@nuxt/ui'
+import type { CommandPaletteGroup, CommandPaletteItem, NavigationMenuItem } from '@nuxt/ui'
 
 const open = ref(false)
 
@@ -75,7 +75,7 @@ const links = [[{
   icon: 'i-lucide-panels-top-left',
   to: 'https://ui.nuxt.com/templates',
   target: '_blank',
-}]] satisfies NavigationMenuItem[][]
+}]] satisfies [NavigationMenuItem[], NavigationMenuItem[]]
 
 function flattenPrimaryNav(items: NavigationMenuItem[]): NavigationMenuItem[] {
   return items.flatMap((item) => {
@@ -85,7 +85,7 @@ function flattenPrimaryNav(items: NavigationMenuItem[]): NavigationMenuItem[] {
   })
 }
 
-const groups = computed(() => {
+const groups = computed((): CommandPaletteGroup[] => {
   const primary = flattenPrimaryNav(links[0]).map((item) => {
     if (item.to === '/memory') {
       return {
@@ -101,16 +101,17 @@ const groups = computed(() => {
     }
     return item
   })
+  const items = [...primary, ...links[1]] as CommandPaletteItem[]
   return [{
     id: 'links',
     label: 'Go to',
-    items: [...primary, ...links[1]],
+    items,
   }]
 })
 </script>
 
 <template>
-  <UDashboardGroup unit="rem" class="dashboard-canvas relative min-h-dvh pb-[3.75rem] md:pb-16">
+  <UDashboardGroup unit="rem" class="dashboard-canvas relative min-h-dvh pb-15 md:pb-16">
     <UDashboardSidebar
       id="default"
       v-model:open="open"

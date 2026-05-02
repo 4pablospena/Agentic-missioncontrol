@@ -11,7 +11,7 @@ const clock = ref('')
 let clockTimer: ReturnType<typeof setInterval> | undefined
 let healthPoller: ReturnType<typeof setInterval> | undefined
 
-const { data: bridge, refresh } = useFetch<OpenClawHealth>('/api/openclaw/health', {
+const { data: bridge, refresh } = useFetch<OpenClawHealth | null>('/api/openclaw/health', {
   server: false,
   default: () => null,
 })
@@ -62,7 +62,7 @@ const dockLinks = [
 
 <template>
   <div
-    class="dock-shell border-default bg-elevated/85 supports-[backdrop-filter]:bg-elevated/70 fixed right-0 bottom-0 left-0 z-40 flex flex-wrap items-center justify-between gap-2 border-t px-3 py-2 backdrop-blur-md md:gap-4 md:px-4"
+    class="dock-shell border-default bg-elevated/85 supports-backdrop-filter:bg-elevated/70 fixed right-0 bottom-0 left-0 z-40 flex flex-wrap items-center justify-between gap-2 border-t px-3 py-2 backdrop-blur-md md:gap-4 md:px-4"
   >
     <div class="text-muted hidden min-w-0 flex-1 items-center gap-3 font-metric text-[11px] sm:flex md:text-xs">
       <span class="text-highlighted shrink-0 tabular-nums">{{ clock }}</span>
