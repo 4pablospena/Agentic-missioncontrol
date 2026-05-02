@@ -116,6 +116,18 @@ const ROUTE_DESCRIPTIONS: Record<string, string> = {
   ...(showDiagnostics ? { '/diagnostics': 'Raw bridge state and session timeline' } : {}),
 }
 
+const accountGroup: CommandPaletteGroup = {
+  id: 'account',
+  label: 'Account',
+  items: [{
+    label: 'Account',
+    icon: 'i-lucide-user-round',
+    description: 'Your operator profile and session',
+    to: '/account',
+    onSelect: closeMobileNav,
+  }] as CommandPaletteItem[],
+}
+
 const groups = computed((): CommandPaletteGroup[] => {
   const primary = flattenPrimaryNav(links[0]).map((item) => {
     const desc = typeof item.to === 'string' ? ROUTE_DESCRIPTIONS[item.to] : undefined
@@ -128,19 +140,22 @@ const groups = computed((): CommandPaletteGroup[] => {
     id: 'links',
     label: 'Go to',
     items,
-  }]
+  }, accountGroup]
 })
 </script>
 
 <template>
-  <UDashboardGroup unit="rem" class="dashboard-canvas relative min-h-dvh pb-15 md:pb-16">
+  <UDashboardGroup unit="rem" class="dashboard-canvas min-h-0">
     <UDashboardSidebar
       id="default"
       v-model:open="open"
       collapsible
       resizable
-      class="bg-elevated/35 dock-sidebar-border"
-      :ui="{ footer: 'lg:border-t lg:border-default' }"
+      class="min-h-0 bg-elevated/35 dock-sidebar-border"
+      :ui="{
+        footer: 'lg:border-t lg:border-default',
+        body: '[scrollbar-width:none] [&::-webkit-scrollbar]:hidden',
+      }"
     >
       <template #header="{ collapsed }">
         <DashboardWorkspaceSwitcher :collapsed="collapsed" />
@@ -173,8 +188,9 @@ const groups = computed((): CommandPaletteGroup[] => {
 
     <UDashboardSearch :groups="groups" />
 
-    <slot />
-
-    <DashboardStatusDock />
+    <!-- min-h-0 + flex-1: lets UDashboardPanel body own vertical scroll inside the fixed shell -->
+    <div class="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+      <slot />
+    </div>
   </UDashboardGroup>
 </template>

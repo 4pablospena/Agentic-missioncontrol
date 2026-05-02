@@ -67,7 +67,7 @@ export default defineEventHandler(async (event) => {
 
   await setUserSession(event, {
     user,
-    loggedInAt: new Date(),
+    loggedInAt: new Date().toISOString(),
   })
 
   return { ok: true as const, user }
