@@ -8,6 +8,7 @@ test.describe('Scheduler UI', () => {
     await page.getByTestId('schedule-title-input').fill(title)
     await page.getByTestId('schedule-submit').click()
     await expect(page.getByText(title)).toBeVisible({ timeout: 30_000 })
-    await expect(page.getByText(/^Next:/)).toBeVisible()
+    /** Same cron ⇒ identical "Next:" text on every row; anchor to this schedule's card. */
+    await expect(page.locator(`[data-schedule-title="${title}"]`).getByText(/^Next:/)).toBeVisible()
   })
 })

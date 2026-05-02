@@ -23,7 +23,10 @@ const emit = defineEmits<{
       :key="s.id"
       :ui="{ body: 'p-4' }"
     >
-      <div class="flex flex-col gap-2">
+      <div
+        class="flex flex-col gap-2"
+        :data-schedule-title="s.taskTemplate.title"
+      >
         <div class="flex flex-wrap items-start justify-between gap-2">
           <div>
             <div class="text-highlighted font-medium">
