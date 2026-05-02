@@ -7,19 +7,54 @@ defineProps<{
 
 const colorMode = useColorMode()
 const auth = useAuthSession()
+const toast = useToast()
 
 const sessionUser = computed(() => auth.user.value)
+const sessionData = computed(() => auth.session.value as { loggedInAt?: string } | null)
 
 const display = computed(() => {
   const u = sessionUser.value
+  const name = u?.name ?? 'Operator'
+  const email = u?.email ?? ''
   return {
-    name: u?.name ?? 'Operator',
+    name,
+    email,
+    role: u?.role ?? 'operator',
     avatar: {
-      src: `https://avatar.vercel.sh/${encodeURIComponent(u?.email ?? 'operator')}`,
-      alt: u?.name ?? 'Operator',
+      src: `https://avatar.vercel.sh/${encodeURIComponent(email || 'operator')}`,
+      alt: name,
     },
   }
 })
+
+const lastLoginLabel = computed(() => {
+  const iso = sessionData.value?.loggedInAt
+  if (!iso)
+    return null
+  try {
+    return new Intl.DateTimeFormat(undefined, {
+      dateStyle: 'medium',
+      timeStyle: 'short',
+    }).format(new Date(iso))
+  }
+  catch {
+    return iso
+  }
+})
+
+async function copyEmail() {
+  if (!display.value.email) {
+    toast.add({ title: 'No email available', color: 'warning', icon: 'i-lucide-info' })
+    return
+  }
+  try {
+    await navigator.clipboard.writeText(display.value.email)
+    toast.add({ title: 'Email copied', color: 'success', icon: 'i-lucide-check' })
+  }
+  catch {
+    toast.add({ title: 'Could not copy email', color: 'error', icon: 'i-lucide-x' })
+  }
+}
 
 async function signOut() {
   await auth.logout()
@@ -27,7 +62,30 @@ async function signOut() {
 }
 
 const items = computed<DropdownMenuItem[][]>(() => [
-  [{ type: 'label', label: display.value.name, avatar: display.value.avatar }],
+  [{ type: 'label' as const, slot: 'account-header' as const }],
+  ...(lastLoginLabel.value
+    ? [[{
+        type: 'label' as const,
+        label: `Last login: ${lastLoginLabel.value}`,
+        icon: 'i-lucide-clock',
+      }]]
+    : []),
+  [
+    {
+      label: 'View account',
+      icon: 'i-lucide-user-round',
+      to: '/account',
+    },
+    {
+      label: 'Copy email',
+      icon: 'i-lucide-copy',
+      disabled: !display.value.email,
+      onSelect(e: Event) {
+        e.preventDefault()
+        void copyEmail()
+      },
+    },
+  ],
   [
     {
       label: 'Appearance',
@@ -70,11 +128,28 @@ const items = computed<DropdownMenuItem[][]>(() => [
   <UDropdownMenu
     :items="items"
     :content="{ align: 'center', collisionPadding: 12 }"
-    :ui="{ content: collapsed ? 'w-40' : 'w-(--reka-dropdown-menu-trigger-width)' }"
+    :ui="{ content: collapsed ? 'w-56' : 'w-(--reka-dropdown-menu-trigger-width) min-w-56' }"
   >
+    <template #account-header>
+      <div class="flex items-start gap-3 py-1">
+        <UAvatar :src="display.avatar.src" :alt="display.avatar.alt" size="md" />
+        <div class="min-w-0 flex-1">
+          <p class="text-highlighted truncate text-sm font-medium">
+            {{ display.name }}
+          </p>
+          <p v-if="display.email" class="text-muted truncate text-xs">
+            {{ display.email }}
+          </p>
+          <UBadge color="primary" variant="subtle" size="xs" class="mt-1.5 capitalize">
+            {{ display.role }}
+          </UBadge>
+        </div>
+      </div>
+    </template>
+
     <UButton
       v-bind="{
-        ...display,
+        avatar: display.avatar,
         label: collapsed ? undefined : display.name,
         trailingIcon: collapsed ? undefined : 'i-lucide-chevrons-up-down',
       }"
@@ -82,6 +157,7 @@ const items = computed<DropdownMenuItem[][]>(() => [
       variant="ghost"
       block
       :square="collapsed"
+      :aria-label="`Account menu for ${display.name}`"
       class="data-[state=open]:bg-elevated"
       :class="[!collapsed && 'py-2']"
       :ui="{ trailingIcon: 'text-dimmed' }"

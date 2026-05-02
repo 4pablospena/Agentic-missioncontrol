@@ -89,6 +89,10 @@ onMounted(() => {
           </p>
         </section>
 
+        <ClientOnly>
+          <DashboardOverviewOnboarding :show-diagnostics="showDiagnostics" />
+        </ClientOnly>
+
         <section
           class="panel-shell flex flex-wrap items-center gap-3 rounded-xl px-4 py-3"
           data-testid="overall-status"
