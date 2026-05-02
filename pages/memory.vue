@@ -249,22 +249,13 @@ async function downloadSnapshotJson(id: string) {
                         :result="r"
                         @delete="requestDelete"
                       />
-                      <div
+                      <CommonEmptyState
                         v-if="!searchResults.length"
-                        class="border-default bg-elevated/40 flex flex-col items-center gap-3 rounded-lg border border-dashed px-6 py-10 text-center"
-                      >
-                        <UIcon name="i-lucide-sparkles" class="text-muted size-10" />
-                        <p class="text-muted text-sm">
-                          Run a search to rank memories by cosine similarity (cap: server max scan).
-                        </p>
-                        <UButton
-                          label="Run semantic search"
-                          icon="i-lucide-search"
-                          size="sm"
-                          :loading="searchPending"
-                          @click="runSemanticSearch"
-                        />
-                      </div>
+                        title="No semantic hits yet."
+                        description="Run a search to rank memories by cosine similarity (cap: server max scan)."
+                        icon="i-lucide-sparkles"
+                        :cta="{ label: 'Run semantic search', icon: 'i-lucide-search', onClick: runSemanticSearch }"
+                      />
                     </div>
                   </div>
                   <div>
@@ -279,22 +270,13 @@ async function downloadSnapshotJson(id: string) {
                         :item="m"
                         @delete="requestDelete"
                       />
-                      <div
+                      <CommonEmptyState
                         v-if="!items.length"
-                        class="border-default bg-elevated/40 flex flex-col items-center gap-3 rounded-lg border border-dashed px-6 py-10 text-center"
-                      >
-                        <UIcon name="i-lucide-inbox" class="text-muted size-10" />
-                        <p class="text-muted text-sm">
-                          No rows yet — inject manual memory or enable chat → memory indexing.
-                        </p>
-                        <UButton
-                          label="Go to Inject"
-                          icon="i-lucide-upload"
-                          size="sm"
-                          variant="soft"
-                          @click="memoryTab = 'inject'"
-                        />
-                      </div>
+                        title="No memory rows yet."
+                        description="Inject manual memory or enable chat → memory indexing."
+                        icon="i-lucide-inbox"
+                        :cta="{ label: 'Go to Inject', icon: 'i-lucide-upload', onClick: () => { memoryTab = 'inject' } }"
+                      />
                     </div>
                   </div>
                 </div>
@@ -359,12 +341,12 @@ async function downloadSnapshotJson(id: string) {
                       </div>
                     </li>
                     <li v-if="!snapshots.snapshots.length" class="py-8">
-                      <div class="flex flex-col items-center gap-3 text-center">
-                        <UIcon name="i-lucide-camera-off" class="text-muted size-10" />
-                        <p class="text-muted text-sm">
-                          No exports yet. Export from current filters on this tab.
-                        </p>
-                      </div>
+                      <CommonEmptyState
+                        title="No exports yet."
+                        description="Export from current filters on this tab."
+                        icon="i-lucide-camera-off"
+                        variant="compact"
+                      />
                     </li>
                   </ul>
                 </UCard>
@@ -377,6 +359,7 @@ async function downloadSnapshotJson(id: string) {
           v-model:open="deleteModalOpen"
           title="Delete memory?"
           description="This removes the row from the index. This cannot be undone."
+          aria-label="Delete memory confirmation"
         >
           <template #footer="{ close }">
             <div class="flex w-full justify-end gap-2">

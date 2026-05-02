@@ -118,9 +118,21 @@ onMounted(() => {
             />
             <div class="grid gap-3 sm:grid-cols-2">
               <AgentsAgentSummaryCard v-for="a in agents" :key="a.id" :agent="a" dense />
-              <p v-if="!agents.length && !isLoading" class="text-muted text-sm sm:col-span-2">
-                No agents loaded.
-              </p>
+              <CommonEmptyState
+                v-if="!agents.length && !isLoading"
+                title="No agents yet."
+                description="Connect a worker or check the bridge to see agents here."
+                icon="i-lucide-bot"
+                variant="compact"
+                class="sm:col-span-2"
+              />
+              <CommonEmptyState
+                v-else-if="isLoading && !agents.length"
+                loading
+                title="Loading agents…"
+                variant="compact"
+                class="sm:col-span-2"
+              />
             </div>
           </UCard>
 
@@ -160,41 +172,50 @@ onMounted(() => {
                 <p class="text-muted mb-2 text-xs font-medium uppercase">
                   By model
                 </p>
-                <ul class="text-muted space-y-1 text-sm">
+                <ul v-if="models.length" class="text-muted space-y-1 text-sm">
                   <li v-for="m in models" :key="m.model">
                     {{ m.model }}: {{ m.tokens }}
                   </li>
-                  <li v-if="!models.length">
-                    —
-                  </li>
                 </ul>
+                <CommonEmptyState
+                  v-else
+                  title="No model usage yet."
+                  icon="i-lucide-cpu"
+                  variant="inline"
+                />
               </div>
               <div>
                 <p class="text-muted mb-2 text-xs font-medium uppercase">
                   Agent status
                 </p>
-                <ul class="text-muted space-y-1 text-sm">
+                <ul v-if="sessions.length" class="text-muted space-y-1 text-sm">
                   <li v-for="s in sessions" :key="s.status">
                     {{ s.status }}: {{ s.count }}
                   </li>
-                  <li v-if="!sessions.length">
-                    —
-                  </li>
                 </ul>
+                <CommonEmptyState
+                  v-else
+                  title="No sessions yet."
+                  icon="i-lucide-activity"
+                  variant="inline"
+                />
               </div>
             </div>
             <div class="mt-4">
               <p class="text-muted mb-2 text-xs font-medium uppercase">
                 Unacked alert severity
               </p>
-              <ul class="text-muted flex flex-wrap gap-3 text-sm">
+              <ul v-if="errors.length" class="text-muted flex flex-wrap gap-3 text-sm">
                 <li v-for="e in errors" :key="e.severity">
                   {{ e.severity }}: {{ e.count }}
                 </li>
-                <li v-if="!errors.length">
-                  —
-                </li>
               </ul>
+              <CommonEmptyState
+                v-else
+                title="No unacked alerts."
+                icon="i-lucide-shield-check"
+                variant="inline"
+              />
             </div>
           </UCard>
         </div>

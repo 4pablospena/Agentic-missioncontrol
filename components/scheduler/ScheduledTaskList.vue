@@ -15,9 +15,12 @@ const emit = defineEmits<{
 
 <template>
   <div class="flex flex-col gap-3">
-    <div v-if="pending" class="text-muted text-sm">
-      Loading schedules…
-    </div>
+    <CommonEmptyState
+      v-if="pending && !schedules.length"
+      loading
+      title="Loading schedules…"
+      variant="compact"
+    />
     <UCard
       v-for="s in schedules"
       :key="s.id"
@@ -71,8 +74,12 @@ const emit = defineEmits<{
         </div>
       </div>
     </UCard>
-    <p v-if="!pending && !schedules.length" class="text-muted text-sm">
-      No schedules yet.
-    </p>
+    <CommonEmptyState
+      v-if="!pending && !schedules.length"
+      title="No schedules yet."
+      description="Create one from the form above to run a recurring task."
+      icon="i-lucide-clock"
+      variant="default"
+    />
   </div>
 </template>

@@ -154,6 +154,7 @@ const detailSlideDescription = computed(() =>
           inset
           :title="detailSlideTitle"
           :description="detailSlideDescription || undefined"
+          :aria-label="detailSlideTitle"
           :ui="{ content: 'sm:max-w-xl max-w-lg w-[calc(100%-2rem)]' }"
         >
           <template #body>

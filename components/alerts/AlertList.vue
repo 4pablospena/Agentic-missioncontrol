@@ -56,11 +56,18 @@ function severityColor(s: Alert['severity']): 'neutral' | 'warning' | 'error' {
         @click="emit('acknowledge', a.id)"
       />
     </div>
-    <p v-if="!alerts.length && !loading" class="text-muted text-sm">
-      No alerts.
-    </p>
-    <p v-if="loading && !alerts.length" class="text-muted text-sm">
-      Loading alerts…
-    </p>
+    <CommonEmptyState
+      v-if="!alerts.length && !loading"
+      title="No alerts yet."
+      description="Heads up: degraded agents and critical events will surface here."
+      icon="i-lucide-bell-off"
+      variant="compact"
+    />
+    <CommonEmptyState
+      v-if="loading && !alerts.length"
+      loading
+      title="Loading alerts…"
+      variant="compact"
+    />
   </div>
 </template>

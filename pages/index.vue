@@ -45,6 +45,9 @@ const overallStatus = computed<{ color: 'success' | 'warning' | 'error', label: 
 
 const activityOpen = ref(false)
 
+const { public: publicConfig } = useRuntimeConfig()
+const showDiagnostics = publicConfig.showDiagnostics !== false
+
 function refreshAll() {
   void refreshAgents()
   void refreshAlerts()
@@ -198,6 +201,7 @@ onMounted(() => {
             icon="i-lucide-activity"
           />
           <UButton
+            v-if="showDiagnostics"
             to="/diagnostics"
             label="Diagnostics"
             color="neutral"

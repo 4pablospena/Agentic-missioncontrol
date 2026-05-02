@@ -3,6 +3,19 @@
 
 /* TenacitOS-lite UX reference (MIT): github.com/carlosazaustre/tenacitOS — dashboard shell tokens only */
 
+/**
+ * Primary color override for LIGHT mode only.
+ * `yellow-500` (#eab308) on white sits at ~1.7:1 contrast — fails WCAG AA for text.
+ * Light mode uses `--ui-color-primary-500` for default and `-600` for hover, so
+ * we pull both into amber-700/800 to clear 4.5:1 on white surfaces.
+ * Dark mode uses `-400` (and the .dark .dashboard-canvas glow uses literal hex),
+ * so the bright yellow accent stays intact in dark mode.
+ */
+:root:not(.dark) {
+  --ui-color-primary-500: #a16207; /* yellow-700 */
+  --ui-color-primary-600: #854d0e; /* yellow-800 */
+}
+
 .font-metric {
   font-variant-numeric: tabular-nums;
   font-family:

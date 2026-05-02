@@ -2,13 +2,27 @@
 import type { CommandPaletteGroup, CommandPaletteItem, NavigationMenuItem } from '@nuxt/ui'
 
 const open = ref(false)
+const { public: publicConfig } = useRuntimeConfig()
+const showDiagnostics = publicConfig.showDiagnostics !== false
 
 function closeMobileNav() {
   open.value = false
 }
 
+const diagnosticsGroup: NavigationMenuItem = {
+  label: 'Diagnostics',
+  icon: 'i-lucide-wrench',
+  type: 'trigger' as const,
+  children: [{
+    label: 'Bridge & sessions',
+    icon: 'i-lucide-stethoscope',
+    to: '/diagnostics',
+    onSelect: closeMobileNav,
+  }],
+}
+
 /** Sidebar grouping: Control / Observability / Operations / Context / Diagnostics. */
-const links = [[{
+const primaryGroups: NavigationMenuItem[] = [{
   label: 'Control',
   icon: 'i-lucide-layout-grid',
   type: 'trigger' as const,
@@ -70,17 +84,9 @@ const links = [[{
     to: '/chat',
     onSelect: closeMobileNav,
   }],
-}, {
-  label: 'Diagnostics',
-  icon: 'i-lucide-wrench',
-  type: 'trigger' as const,
-  children: [{
-    label: 'Bridge & sessions',
-    icon: 'i-lucide-stethoscope',
-    to: '/diagnostics',
-    onSelect: closeMobileNav,
-  }],
-}], [{
+}, ...(showDiagnostics ? [diagnosticsGroup] : [])]
+
+const externalGroups: NavigationMenuItem[] = [{
   label: 'OpenClaw docs',
   icon: 'i-lucide-book-open',
   to: 'https://docs.openclaw.ai/',
@@ -90,7 +96,9 @@ const links = [[{
   icon: 'i-lucide-panels-top-left',
   to: 'https://ui.nuxt.com/templates',
   target: '_blank',
-}]] satisfies [NavigationMenuItem[], NavigationMenuItem[]]
+}]
+
+const links = [primaryGroups, externalGroups] satisfies [NavigationMenuItem[], NavigationMenuItem[]]
 
 function flattenPrimaryNav(items: NavigationMenuItem[]): NavigationMenuItem[] {
   return items.flatMap((item) => {
@@ -103,9 +111,9 @@ function flattenPrimaryNav(items: NavigationMenuItem[]): NavigationMenuItem[] {
 const ROUTE_DESCRIPTIONS: Record<string, string> = {
   '/': 'System overview at a glance',
   '/monitoring': 'KPIs, agents, alerts, recent logs',
-  '/diagnostics': 'Raw bridge state and session timeline',
   '/memory': 'Semantic memory, snapshots, embeddings',
   '/chat': 'Agent conversations and threads',
+  ...(showDiagnostics ? { '/diagnostics': 'Raw bridge state and session timeline' } : {}),
 }
 
 const groups = computed((): CommandPaletteGroup[] => {

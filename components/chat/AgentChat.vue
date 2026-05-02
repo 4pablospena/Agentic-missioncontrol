@@ -112,6 +112,7 @@ function onSelectThread(id: string) {
       side="left"
       title="Threads"
       description="Pick a conversation"
+      aria-label="Conversation threads"
       class="lg:hidden"
       :ui="{ content: 'max-w-[min(100vw,280px)]' }"
     >
