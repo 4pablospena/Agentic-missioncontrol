@@ -66,6 +66,23 @@
     0 4px 24px rgb(0 0 0 / 0.35);
 }
 
+/**
+ * Surface hierarchy (dashboard):
+ * - `.panel-shell` — primary elevated regions: page sections, `UCard` roots on the canvas.
+ *   Keep border + shadow from `.panel-shell`; do not strip with `shadow-none ring-0`.
+ * - `.panel-shell-nested` — tiles inside an existing `.panel-shell` (grids inside a card/section).
+ *   Hairline ring only so stacked shadows do not compete.
+ */
+.panel-shell-nested {
+  border-radius: var(--ui-radius);
+  background-color: color-mix(in oklab, var(--ui-bg-elevated) 92%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in oklab, var(--ui-border) 55%, transparent);
+}
+
+.dark .panel-shell-nested {
+  box-shadow: 0 0 0 1px rgb(255 255 255 / 0.06);
+}
+
 .page-toolbar {
   border-bottom: 1px solid color-mix(in oklab, var(--ui-border) 70%, transparent);
 }

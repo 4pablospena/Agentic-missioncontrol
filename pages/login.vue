@@ -65,9 +65,9 @@ async function onSubmit(payload: FormSubmitEvent<LoginFormOutput>) {
       icon="i-lucide-user"
       :fields="fields"
       :submit="{
-        label: 'Submit',
-        color: 'error',
-        variant: 'subtle',
+        label: 'Sign in',
+        color: 'primary',
+        variant: 'solid',
       }"
       :loading="pending"
       class="w-full"

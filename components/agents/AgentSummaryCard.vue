@@ -12,8 +12,8 @@ withDefaults(defineProps<{
 
 <template>
   <UCard
-    class="panel-shell hover:bg-elevated/45 transition-colors"
-    :ui="{ body: dense ? 'p-3' : 'p-4 sm:p-4', root: 'shadow-none ring-0' }"
+    class="panel-shell-nested hover:bg-elevated/45 transition-colors"
+    :ui="{ body: dense ? 'p-3' : 'p-4 sm:p-4' }"
   >
     <div class="flex items-start justify-between gap-2" :class="{ 'gap-1.5': dense }">
       <div class="min-w-0">

@@ -117,7 +117,7 @@ const detailSlideDescription = computed(() =>
           </UTooltip>
         </section>
 
-        <UCard class="panel-shell shadow-none ring-0" :ui="{ body: 'p-4 sm:p-5' }">
+        <UCard class="panel-shell rounded-xl" :ui="{ body: 'p-4 sm:p-5' }">
           <template #header>
             <div class="flex flex-wrap items-center justify-between gap-2">
               <h2 class="text-highlighted font-semibold">

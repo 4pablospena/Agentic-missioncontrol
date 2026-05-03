@@ -72,7 +72,7 @@ onMounted(() => {
           <span v-if="bridge?.message" class="text-muted max-w-xl truncate">{{ bridge.message }}</span>
         </section>
 
-        <UCard class="panel-shell" :ui="{ root: 'shadow-none ring-0', body: 'p-4 sm:p-5' }">
+        <UCard class="panel-shell rounded-xl" :ui="{ body: 'p-4 sm:p-5' }">
           <template #header>
             <div class="flex items-center justify-between gap-2">
               <h2 class="text-highlighted font-semibold">
@@ -108,7 +108,7 @@ onMounted(() => {
           </p>
         </UCard>
 
-        <UCard class="panel-shell" :ui="{ root: 'shadow-none ring-0', body: 'p-4 sm:p-5' }">
+        <UCard class="panel-shell rounded-xl" :ui="{ body: 'p-4 sm:p-5' }">
           <template #header>
             <div class="flex items-center justify-between gap-2">
               <h2 class="text-highlighted font-semibold">

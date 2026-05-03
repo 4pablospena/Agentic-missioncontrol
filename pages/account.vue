@@ -113,11 +113,6 @@ async function copyEmail() {
   }
 }
 
-async function signOut() {
-  await auth.logout()
-  await navigateTo('/login')
-}
-
 async function saveProfile() {
   if (!user.value || savingProfile.value)
     return
@@ -193,20 +188,9 @@ async function clearUploadedAvatar() {
 <template>
   <UDashboardPanel id="account">
     <template #header>
-      <UDashboardNavbar title="Account" :ui="{ right: 'gap-2' }">
+      <UDashboardNavbar title="Account">
         <template #leading>
           <UDashboardSidebarCollapse />
-        </template>
-        <template #right>
-          <UButton
-            v-if="user"
-            icon="i-lucide-log-out"
-            label="Sign out"
-            color="neutral"
-            variant="ghost"
-            size="sm"
-            @click="signOut"
-          />
         </template>
       </UDashboardNavbar>
     </template>
@@ -215,7 +199,9 @@ async function clearUploadedAvatar() {
       <div class="flex flex-col gap-6">
         <section class="page-toolbar pb-2">
           <p class="text-muted text-sm leading-snug">
-            Your operator profile and current session.
+            Your operator profile and current session. To sign out, use
+            <span class="text-highlighted font-medium">Sign out</span>
+            in the profile menu at the bottom of the sidebar.
           </p>
         </section>
 

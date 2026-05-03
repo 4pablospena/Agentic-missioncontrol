@@ -213,7 +213,7 @@ async function downloadSnapshotJson(id: string) {
           </UTooltip>
         </section>
 
-        <UCard class="panel-shell" :ui="{ root: 'shadow-none ring-0' }">
+        <UCard class="panel-shell rounded-xl" :ui="{ body: 'p-4 sm:p-5' }">
           <UAlert
             v-if="errorMsg"
             color="error"

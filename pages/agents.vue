@@ -81,7 +81,7 @@ onMounted(() => {
           </div>
         </section>
 
-        <UCard class="panel-shell shadow-none ring-0" :ui="{ body: 'p-4 sm:p-5' }">
+        <UCard class="panel-shell rounded-xl" :ui="{ body: 'p-4 sm:p-5' }">
           <template #header>
             <h2 class="text-highlighted text-base font-semibold">
               Agent monitor

@@ -102,7 +102,7 @@ onMounted(() => {
         </section>
 
         <div class="grid gap-6 xl:grid-cols-12">
-          <UCard class="panel-shell xl:col-span-7" :ui="{ root: 'shadow-none ring-0', body: 'p-4 sm:p-5' }">
+          <UCard class="panel-shell rounded-xl xl:col-span-7" :ui="{ body: 'p-4 sm:p-5' }">
             <template #header>
               <h2 class="text-highlighted font-semibold">
                 Agents
@@ -136,7 +136,7 @@ onMounted(() => {
             </div>
           </UCard>
 
-          <UCard class="panel-shell xl:col-span-5" :ui="{ root: 'shadow-none ring-0', body: 'p-4 sm:p-5' }">
+          <UCard class="panel-shell rounded-xl xl:col-span-5" :ui="{ body: 'p-4 sm:p-5' }">
             <template #header>
               <h2 class="text-highlighted font-semibold">
                 Token usage
@@ -147,7 +147,7 @@ onMounted(() => {
         </div>
 
         <div class="grid gap-6 xl:grid-cols-2">
-          <UCard class="panel-shell" :ui="{ root: 'shadow-none ring-0', body: 'p-4 sm:p-5' }">
+          <UCard class="panel-shell rounded-xl" :ui="{ body: 'p-4 sm:p-5' }">
             <template #header>
               <h2 class="text-highlighted font-semibold">
                 Alerts
@@ -161,7 +161,7 @@ onMounted(() => {
             />
           </UCard>
 
-          <UCard class="panel-shell" :ui="{ root: 'shadow-none ring-0', body: 'p-4 sm:p-5' }">
+          <UCard class="panel-shell rounded-xl" :ui="{ body: 'p-4 sm:p-5' }">
             <template #header>
               <h2 class="text-highlighted font-semibold">
                 Models &amp; sessions
@@ -220,7 +220,7 @@ onMounted(() => {
           </UCard>
         </div>
 
-        <UCard class="panel-shell" :ui="{ root: 'shadow-none ring-0', body: 'p-4 sm:p-5' }">
+        <UCard class="panel-shell rounded-xl" :ui="{ body: 'p-4 sm:p-5' }">
           <template #header>
             <div class="flex items-center justify-between gap-2">
               <h2 class="text-highlighted font-semibold">

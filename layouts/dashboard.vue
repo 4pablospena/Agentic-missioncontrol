@@ -98,19 +98,22 @@ const primaryGroups: NavigationMenuItem[] = [{
   ],
 }, ...(showDiagnostics ? [diagnosticsGroup] : [])]
 
-const externalGroups: NavigationMenuItem[] = [{
+/** Docs / templates: command palette only — keeps the sidebar operator-focused. */
+const externalResourcesItems: CommandPaletteItem[] = [{
   label: 'OpenClaw docs',
   icon: 'i-lucide-book-open',
+  description: 'Gateway and worker documentation',
   to: 'https://docs.openclaw.ai/',
   target: '_blank',
 }, {
   label: 'Nuxt UI templates',
   icon: 'i-lucide-panels-top-left',
+  description: 'Dashboard UI reference',
   to: 'https://ui.nuxt.com/templates',
   target: '_blank',
 }]
 
-const links = [primaryGroups, externalGroups] satisfies [NavigationMenuItem[], NavigationMenuItem[]]
+const links = primaryGroups satisfies NavigationMenuItem[]
 
 function flattenPrimaryNav(items: NavigationMenuItem[]): NavigationMenuItem[] {
   return items.flatMap((item) => {
@@ -122,9 +125,14 @@ function flattenPrimaryNav(items: NavigationMenuItem[]): NavigationMenuItem[] {
 
 const ROUTE_DESCRIPTIONS: Record<string, string> = {
   '/': 'System overview at a glance',
+  '/agents': 'Fleet tiles and bridge-backed agent monitor',
   '/monitoring': 'KPIs, agents, alerts, recent logs',
+  '/logs': 'Browse, filter and ingest log streams',
+  '/tasks': 'Kanban board and task execution controls',
+  '/scheduler': 'Cron schedules for recurring tasks',
   '/memory': 'Semantic memory, snapshots, embeddings',
   '/chat': 'Agent conversations and threads',
+  '/account': 'Profile, avatar and session details',
   ...(workspaceEnabled ? { '/workspace': 'Browse files and search content read-only' } : {}),
   ...(showDiagnostics ? { '/diagnostics': 'Raw bridge state and session timeline' } : {}),
 }
@@ -135,25 +143,30 @@ const accountGroup: CommandPaletteGroup = {
   items: [{
     label: 'Account',
     icon: 'i-lucide-user-round',
-    description: 'Your operator profile and session',
+    description: ROUTE_DESCRIPTIONS['/account'],
     to: '/account',
     onSelect: closeMobileNav,
-  }] as CommandPaletteItem[],
+  }] satisfies CommandPaletteItem[],
+}
+
+const externalResourcesGroup: CommandPaletteGroup = {
+  id: 'external-resources',
+  label: 'External resources',
+  items: externalResourcesItems,
 }
 
 const groups = computed((): CommandPaletteGroup[] => {
-  const primary = flattenPrimaryNav(links[0]).map((item) => {
+  const primary = flattenPrimaryNav(links).map((item) => {
     const desc = typeof item.to === 'string' ? ROUTE_DESCRIPTIONS[item.to] : undefined
     if (desc)
       return { ...item, description: desc }
     return item
   })
-  const items = [...primary, ...links[1]] as CommandPaletteItem[]
   return [{
     id: 'links',
     label: 'Go to',
-    items,
-  }, accountGroup]
+    items: primary as CommandPaletteItem[],
+  }, accountGroup, externalResourcesGroup]
 })
 </script>
 
@@ -187,26 +200,18 @@ const groups = computed((): CommandPaletteGroup[] => {
 
           <UNavigationMenu
             :collapsed="collapsed"
-            :items="links[0]"
+            :items="links"
             orientation="vertical"
             tooltip
             popover
             class="min-h-0 flex-1 overflow-y-auto"
           />
 
-          <!-- Docs (OpenClaw / Nuxt UI), then notifications and profile in sequence -->
+          <!-- Profile + Sign out (session exit lives here only). Docs: command palette → External resources -->
           <div
             class="border-default mt-auto flex w-full min-w-0 shrink-0 flex-col gap-2 border-t pt-3 pb-2"
             :class="collapsed ? 'items-center' : 'px-1'"
           >
-            <UNavigationMenu
-              :collapsed="collapsed"
-              :items="links[1]"
-              orientation="vertical"
-              tooltip
-              :popover="false"
-              class="w-full min-w-0"
-            />
             <DashboardUserMenu :collapsed="collapsed" class="min-h-0 w-full min-w-0 shrink-0" />
           </div>
         </div>

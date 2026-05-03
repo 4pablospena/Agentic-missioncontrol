@@ -145,7 +145,7 @@ async function addSampleLog() {
           </UTooltip>
         </section>
 
-        <UCard class="panel-shell" :ui="{ root: 'shadow-none ring-0', body: 'p-4 sm:p-5' }">
+        <UCard class="panel-shell rounded-xl" :ui="{ body: 'p-4 sm:p-5' }">
           <LogsLogFilters
             v-model="filters"
             :agent-options="agentOptions"

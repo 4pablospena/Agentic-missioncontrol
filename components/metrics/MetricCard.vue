@@ -7,7 +7,7 @@ defineProps<{
 </script>
 
 <template>
-  <UCard class="panel-shell" :ui="{ root: 'shadow-none ring-0' }">
+  <UCard class="panel-shell rounded-xl" :ui="{ body: 'p-4 sm:p-5' }">
     <p class="text-muted font-metric text-xs font-medium uppercase tracking-wide">
       {{ title }}
     </p>

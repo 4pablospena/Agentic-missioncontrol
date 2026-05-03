@@ -57,7 +57,7 @@ async function onSubmit(payload: ScheduleTaskPayload) {
       <div class="grid gap-6 lg:grid-cols-2">
         <SchedulerScheduleTaskForm @submit="onSubmit" />
 
-        <UCard class="shadow-none ring-0 panel-shell" :ui="{ body: 'p-4 sm:p-5' }">
+        <UCard class="panel-shell rounded-xl" :ui="{ body: 'p-4 sm:p-5' }">
           <template #header>
             <span class="text-highlighted font-semibold">Schedules</span>
           </template>
