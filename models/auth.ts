@@ -11,3 +11,21 @@ export interface LoginResponse {
   ok: true
   user: AuthUser
 }
+
+export interface UpdateOperatorProfilePayload {
+  name: string
+  /** Omit to leave unchanged; send '' to clear custom avatar. */
+  avatarUrl?: string
+}
+
+export interface UpdateOperatorProfileResponse {
+  user: AuthUser
+}
+
+export interface UploadAvatarResponse {
+  user: AuthUser
+}
+
+export interface DeleteUploadedAvatarResponse {
+  user: AuthUser
+}

@@ -48,6 +48,7 @@ export async function startIntegrationServer(): Promise<IntegrationServer> {
         NUXT_MC_AUTH_EMAIL: email,
         NUXT_MC_AUTH_PASSWORD: password,
         NUXT_SESSION_PASSWORD: sessionPassword,
+        NUXT_AVATAR_UPLOAD_DIR: join(tmpdir(), `mc-integration-avatars-${randomUUID()}`),
         OPENCLAW_BRIDGE_MODE: 'mock',
       },
       stdio: ['ignore', 'pipe', 'pipe'],

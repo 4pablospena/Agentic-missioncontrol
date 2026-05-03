@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { DropdownMenuItem } from '@nuxt/ui'
+import { userAvatarSrc } from '~/utils/user-avatar'
 
 defineProps<{
   collapsed?: boolean
@@ -8,6 +9,8 @@ defineProps<{
 const colorMode = useColorMode()
 const auth = useAuthSession()
 const toast = useToast()
+const runtimeConfig = useRuntimeConfig()
+const apiBase = computed(() => String(runtimeConfig.public.apiBase ?? ''))
 
 const sessionUser = computed(() => auth.user.value)
 const sessionData = computed(() => auth.session.value as { loggedInAt?: string } | null)
@@ -21,7 +24,7 @@ const display = computed(() => {
     email,
     role: u?.role ?? 'operator',
     avatar: {
-      src: `https://avatar.vercel.sh/${encodeURIComponent(email || 'operator')}`,
+      src: userAvatarSrc(email, u?.avatarUrl, apiBase.value),
       alt: name,
     },
   }

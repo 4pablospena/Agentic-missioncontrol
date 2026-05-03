@@ -45,4 +45,19 @@ describe('createApiClient', () => {
       expect.objectContaining({ method: 'DELETE' }),
     )
   })
+
+  it('postFormData sends multipart body', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({ user: { id: 'op' } })
+    const client = createApiClient(fetchMock as Parameters<typeof createApiClient>[0], '')
+    const fd = new FormData()
+    fd.append('file', new Blob(['x'], { type: 'image/png' }), 'x.png')
+    await client.postFormData('/api/account/avatar', fd)
+    expect(fetchMock).toHaveBeenCalledWith(
+      '/api/account/avatar',
+      expect.objectContaining({
+        method: 'POST',
+        body: fd,
+      }),
+    )
+  })
 })

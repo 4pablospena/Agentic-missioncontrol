@@ -1,6 +1,18 @@
 import { loginWithApiSession, logoutSession } from '~/composables/auth-session.logic'
 import { createApiClient } from '~/services/api-client.service'
-import type { LoginPayload, LoginResponse } from '~/models/auth'
+import {
+  deleteUploadedAvatar as deleteUploadedAvatarRequest,
+  updateOperatorProfile as patchOperatorProfile,
+  uploadOperatorAvatar as uploadOperatorAvatarRequest,
+} from '~/services/account.service'
+import type {
+  DeleteUploadedAvatarResponse,
+  LoginPayload,
+  LoginResponse,
+  UpdateOperatorProfilePayload,
+  UpdateOperatorProfileResponse,
+  UploadAvatarResponse,
+} from '~/models/auth'
 
 export function useAuthSession() {
   const session = useUserSession()
@@ -19,6 +31,26 @@ export function useAuthSession() {
     return logoutSession(session)
   }
 
+  async function updateProfile(
+    payload: UpdateOperatorProfilePayload,
+  ): Promise<UpdateOperatorProfileResponse> {
+    const res = await patchOperatorProfile(apiClient, payload)
+    await session.fetch()
+    return res
+  }
+
+  async function uploadAvatar(file: File): Promise<UploadAvatarResponse> {
+    const res = await uploadOperatorAvatarRequest(apiClient, file)
+    await session.fetch()
+    return res
+  }
+
+  async function removeUploadedAvatar(): Promise<DeleteUploadedAvatarResponse> {
+    const res = await deleteUploadedAvatarRequest(apiClient)
+    await session.fetch()
+    return res
+  }
+
   return {
     ready: session.ready,
     loggedIn: session.loggedIn,
@@ -27,5 +59,8 @@ export function useAuthSession() {
     fetch: session.fetch,
     login,
     logout,
+    updateProfile,
+    uploadAvatar,
+    removeUploadedAvatar,
   }
 }

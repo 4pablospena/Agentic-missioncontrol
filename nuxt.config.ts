@@ -56,6 +56,11 @@ export default defineNuxtConfig({
      * Set via `NUXT_WORKSPACE_ROOT` to an absolute path you trust to be served read-only.
      */
     workspaceRoot: process.env.NUXT_WORKSPACE_ROOT ?? '',
+    /**
+     * Directory for uploaded operator avatars (server-only). Default `./data/avatars` when unset.
+     * Relative paths resolve from `process.cwd()` (same as DATABASE_PATH).
+     */
+    avatarUploadDir: process.env.NUXT_AVATAR_UPLOAD_DIR ?? '',
     public: {
       apiBase: process.env.NUXT_PUBLIC_API_BASE ?? '',
       /**
