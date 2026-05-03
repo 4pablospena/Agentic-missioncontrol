@@ -1,5 +1,8 @@
 import type { Ref } from 'vue'
 import type { OpenClawHealth } from '~/models/openclaw'
+import { useMcConfig } from '~/composables/useMcConfig'
+import { createApiClient } from '~/services/api-client.service'
+import { createOpenClawAgentService } from '~/services/openclaw-agent.service'
 
 /**
  * Single source of truth for "system" status (realtime websocket + OpenClaw bridge health).
@@ -39,14 +42,20 @@ function getOrCreateState(): InternalState {
   if (existing)
     return existing
 
+  const { apiBase } = useMcConfig()
   const bridge = ref<OpenClawHealth | null>(null)
 
+  /**
+   * Build the service per call so `useRequestFetch()` runs in a valid Nuxt
+   * context (this state is created lazily and shared across consumers).
+   */
   async function refresh() {
     if (import.meta.server)
       return
     try {
-      const data = await $fetch<OpenClawHealth>('/api/openclaw/health')
-      bridge.value = data
+      const client = createApiClient(useRequestFetch(), apiBase.value)
+      const service = createOpenClawAgentService(client)
+      bridge.value = await service.getHealth()
     }
     catch {
       bridge.value = null

@@ -1,11 +1,15 @@
 import type { Agent } from '~/models/agent'
-import type { AgentCommandResult, SendAgentCommandPayload } from '~/models/openclaw'
+import type {
+  AgentCommandResult,
+  OpenClawHealth,
+  SendAgentCommandPayload,
+} from '~/models/openclaw'
 import type { ApiClient } from './api-client.service'
 
 export interface OpenClawAgentService {
   listAgents(): Promise<Agent[]>
   getAgent(agentId: string): Promise<Agent | null>
-  getHealth(): Promise<unknown>
+  getHealth(): Promise<OpenClawHealth>
   sendCommand(agentId: string, payload: SendAgentCommandPayload): Promise<AgentCommandResult>
 }
 
@@ -33,7 +37,7 @@ export function createOpenClawAgentService(client: ApiClient): OpenClawAgentServ
       }
     },
     getHealth() {
-      return client.get('/api/openclaw/health')
+      return client.get<OpenClawHealth>('/api/openclaw/health')
     },
     sendCommand(agentId: string, payload: SendAgentCommandPayload) {
       return client.post<SendAgentCommandPayload, AgentCommandResult>(
