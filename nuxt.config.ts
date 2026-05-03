@@ -50,6 +50,12 @@ export default defineNuxtConfig({
       Number.parseInt(process.env.NUXT_MEMORY_CHAT_RECENT_MESSAGES ?? '40', 10) || 40,
     memorySemanticContextLimit:
       Number.parseInt(process.env.NUXT_MEMORY_SEMANTIC_CONTEXT_LIMIT ?? '5', 10) || 5,
+    /**
+     * Phase 5: workspace browser root (server-only).
+     * When empty the read-only filesystem endpoints return 503 and the UI hides the route.
+     * Set via `NUXT_WORKSPACE_ROOT` to an absolute path you trust to be served read-only.
+     */
+    workspaceRoot: process.env.NUXT_WORKSPACE_ROOT ?? '',
     public: {
       apiBase: process.env.NUXT_PUBLIC_API_BASE ?? '',
       /**
@@ -58,6 +64,11 @@ export default defineNuxtConfig({
        * dev keeps full visibility; flip to `false` in production deployments.
        */
       showDiagnostics: process.env.NUXT_PUBLIC_SHOW_DIAGNOSTICS !== 'false',
+      /**
+       * Mirrors the server-only `workspaceRoot` as a boolean flag. The UI uses this to
+       * gate the Workspace nav entry and command palette item without leaking the path.
+       */
+      workspaceEnabled: !!(process.env.NUXT_WORKSPACE_ROOT ?? '').trim(),
     },
   },
 

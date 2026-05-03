@@ -1,4 +1,4 @@
-import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core'
+import { index, integer, sqliteTable, text } from 'drizzle-orm/sqlite-core'
 
 /** Phase 1 stub tables; auth remains env/session-based. No FK from logs.agent_id to avoid orphan rows in local DBs. */
 export const users = sqliteTable('users', {
@@ -122,3 +122,21 @@ export const memorySnapshots = sqliteTable('memory_snapshots', {
   blobJson: text('blob_json').notNull(),
   createdAt: text('created_at').notNull(),
 })
+
+/** Phase 5: durable notifications inbox (separate from ephemeral toasts and append-only realtime_events). */
+export const notifications = sqliteTable(
+  'notifications',
+  {
+    id: text('id').primaryKey(),
+    type: text('type').notNull(),
+    severity: text('severity').notNull(),
+    title: text('title').notNull(),
+    body: text('body'),
+    payloadJson: text('payload_json'),
+    read: integer('read', { mode: 'boolean' }).notNull().default(false),
+    createdAt: text('created_at').notNull(),
+  },
+  table => ({
+    readCreatedAtIdx: index('notifications_read_created_at_idx').on(table.read, table.createdAt),
+  }),
+)

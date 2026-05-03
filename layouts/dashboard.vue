@@ -4,6 +4,7 @@ import type { CommandPaletteGroup, CommandPaletteItem, NavigationMenuItem } from
 const open = ref(false)
 const { public: publicConfig } = useRuntimeConfig()
 const showDiagnostics = publicConfig.showDiagnostics !== false
+const workspaceEnabled = publicConfig.workspaceEnabled === true
 
 function closeMobileNav() {
   open.value = false
@@ -73,17 +74,28 @@ const primaryGroups: NavigationMenuItem[] = [{
   label: 'Context',
   icon: 'i-lucide-layers',
   type: 'trigger' as const,
-  children: [{
-    label: 'Memory',
-    icon: 'i-lucide-database',
-    to: '/memory',
-    onSelect: closeMobileNav,
-  }, {
-    label: 'Chat',
-    icon: 'i-lucide-message-square',
-    to: '/chat',
-    onSelect: closeMobileNav,
-  }],
+  children: [
+    {
+      label: 'Memory',
+      icon: 'i-lucide-database',
+      to: '/memory',
+      onSelect: closeMobileNav,
+    },
+    {
+      label: 'Chat',
+      icon: 'i-lucide-message-square',
+      to: '/chat',
+      onSelect: closeMobileNav,
+    },
+    ...(workspaceEnabled
+      ? [{
+          label: 'Workspace',
+          icon: 'i-lucide-folder-tree',
+          to: '/workspace',
+          onSelect: closeMobileNav,
+        }]
+      : []),
+  ],
 }, ...(showDiagnostics ? [diagnosticsGroup] : [])]
 
 const externalGroups: NavigationMenuItem[] = [{
@@ -113,6 +125,7 @@ const ROUTE_DESCRIPTIONS: Record<string, string> = {
   '/monitoring': 'KPIs, agents, alerts, recent logs',
   '/memory': 'Semantic memory, snapshots, embeddings',
   '/chat': 'Agent conversations and threads',
+  ...(workspaceEnabled ? { '/workspace': 'Browse files and search content read-only' } : {}),
   ...(showDiagnostics ? { '/diagnostics': 'Raw bridge state and session timeline' } : {}),
 }
 
@@ -153,36 +166,50 @@ const groups = computed((): CommandPaletteGroup[] => {
       resizable
       class="min-h-0 bg-elevated/35 dock-sidebar-border"
       :ui="{
-        footer: 'lg:border-t lg:border-default',
         body: '[scrollbar-width:none] [&::-webkit-scrollbar]:hidden',
       }"
     >
       <template #header="{ collapsed }">
-        <DashboardWorkspaceSwitcher :collapsed="collapsed" />
+        <div
+          class="flex min-w-0 gap-1.5"
+          :class="collapsed ? 'w-full flex-col items-center' : 'w-full flex-row items-center'"
+        >
+          <DashboardWorkspaceSwitcher :collapsed="collapsed" />
+          <ClientOnly>
+            <DashboardNotificationBell :collapsed="collapsed" placement="header" />
+          </ClientOnly>
+        </div>
       </template>
 
       <template #default="{ collapsed }">
-        <UDashboardSearchButton :collapsed="collapsed" class="bg-transparent ring-default" />
+        <div class="flex min-h-0 flex-1 flex-col gap-2">
+          <UDashboardSearchButton :collapsed="collapsed" class="bg-transparent ring-default shrink-0" />
 
-        <UNavigationMenu
-          :collapsed="collapsed"
-          :items="links[0]"
-          orientation="vertical"
-          tooltip
-          popover
-        />
+          <UNavigationMenu
+            :collapsed="collapsed"
+            :items="links[0]"
+            orientation="vertical"
+            tooltip
+            popover
+            class="min-h-0 flex-1 overflow-y-auto"
+          />
 
-        <UNavigationMenu
-          :collapsed="collapsed"
-          :items="links[1]"
-          orientation="vertical"
-          tooltip
-          class="mt-auto"
-        />
-      </template>
-
-      <template #footer="{ collapsed }">
-        <DashboardUserMenu :collapsed="collapsed" />
+          <!-- Docs (OpenClaw / Nuxt UI), then notifications and profile in sequence -->
+          <div
+            class="border-default mt-auto flex w-full min-w-0 shrink-0 flex-col gap-2 border-t pt-3 pb-2"
+            :class="collapsed ? 'items-center' : 'px-1'"
+          >
+            <UNavigationMenu
+              :collapsed="collapsed"
+              :items="links[1]"
+              orientation="vertical"
+              tooltip
+              :popover="false"
+              class="w-full min-w-0"
+            />
+            <DashboardUserMenu :collapsed="collapsed" class="min-h-0 w-full min-w-0 shrink-0" />
+          </div>
+        </div>
       </template>
     </UDashboardSidebar>
 
