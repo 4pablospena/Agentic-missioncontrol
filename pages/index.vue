@@ -145,7 +145,7 @@ onMounted(() => {
             <UButton
               v-if="criticalAlerts.length"
               to="/logs"
-              label="Ver alertas"
+              label="View alerts"
               color="error"
               variant="soft"
               size="sm"
@@ -155,7 +155,7 @@ onMounted(() => {
             <UButton
               v-if="queuedTasks"
               to="/tasks"
-              label="Ver tareas"
+              label="View tasks"
               color="neutral"
               variant="outline"
               size="sm"

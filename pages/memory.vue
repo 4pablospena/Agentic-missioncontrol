@@ -196,11 +196,16 @@ async function downloadSnapshotJson(id: string) {
     </template>
 
     <template #body>
-      <div class="flex flex-col gap-6">
-        <section class="page-toolbar flex flex-wrap items-center justify-between gap-3 pb-2">
-          <p class="text-muted text-sm leading-snug">
-            Search, inject and snapshot the semantic memory store.
-          </p>
+      <div class="flex flex-col gap-8">
+        <section class="page-toolbar flex flex-wrap items-start justify-between gap-3 pb-2">
+          <div class="max-w-2xl space-y-1.5">
+            <p class="text-muted text-sm leading-snug">
+              Search, inject and snapshot the semantic memory store.
+            </p>
+            <p class="text-muted text-xs leading-snug">
+              Tabs below: semantic search and lists, manual inject, or snapshot export/import history.
+            </p>
+          </div>
           <UTooltip text="Searches use cosine similarity. Snapshots export the current filters as JSON.">
             <UButton
               icon="i-lucide-info"
@@ -208,6 +213,7 @@ async function downloadSnapshotJson(id: string) {
               variant="ghost"
               size="xs"
               square
+              class="shrink-0 self-start"
               aria-label="How memory works"
             />
           </UTooltip>

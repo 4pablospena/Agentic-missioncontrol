@@ -71,14 +71,18 @@ onMounted(() => {
     </template>
 
     <template #body>
-      <div class="flex flex-col gap-6">
+      <div class="flex flex-col gap-8">
         <section class="page-toolbar pb-2">
           <p class="text-muted text-sm leading-snug">
             Telemetry for engineers: agents, tokens, alerts and recent logs.
           </p>
         </section>
 
-        <section class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <section aria-labelledby="monitoring-metrics-heading">
+          <h2 id="monitoring-metrics-heading" class="text-muted mb-3 text-xs font-semibold uppercase tracking-wide">
+            Snapshot metrics
+          </h2>
+          <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <MetricsMetricCard
             title="Agents"
             :value="agents.length"
@@ -99,14 +103,24 @@ onMounted(() => {
             :value="recentLogs.length"
             description="Last 12 rows"
           />
+          </div>
         </section>
 
-        <div class="grid gap-6 xl:grid-cols-12">
+        <section aria-labelledby="monitoring-fleet-heading">
+          <h2 id="monitoring-fleet-heading" class="text-muted mb-3 text-xs font-semibold uppercase tracking-wide">
+            Fleet &amp; usage
+          </h2>
+          <div class="grid gap-6 xl:grid-cols-12">
           <UCard class="panel-shell rounded-xl xl:col-span-7" :ui="{ body: 'p-4 sm:p-5' }">
             <template #header>
-              <h2 class="text-highlighted font-semibold">
-                Agents
-              </h2>
+              <div>
+                <h3 class="text-highlighted text-base font-semibold">
+                  Agents
+                </h3>
+                <p class="text-muted mt-0.5 text-xs leading-snug">
+                  Live fleet from the OpenClaw bridge.
+                </p>
+              </div>
             </template>
             <UAlert
               v-if="error"
@@ -138,20 +152,35 @@ onMounted(() => {
 
           <UCard class="panel-shell rounded-xl xl:col-span-5" :ui="{ body: 'p-4 sm:p-5' }">
             <template #header>
-              <h2 class="text-highlighted font-semibold">
-                Token usage
-              </h2>
+              <div>
+                <h3 class="text-highlighted text-base font-semibold">
+                  Token usage
+                </h3>
+                <p class="text-muted mt-0.5 text-xs leading-snug">
+                  Per-agent totals reported by the gateway.
+                </p>
+              </div>
             </template>
             <MetricsTokenUsageChart :series="tokenSeries" :max="tokenMax" />
           </UCard>
-        </div>
+          </div>
+        </section>
 
-        <div class="grid gap-6 xl:grid-cols-2">
+        <section aria-labelledby="monitoring-ops-heading">
+          <h2 id="monitoring-ops-heading" class="text-muted mb-3 text-xs font-semibold uppercase tracking-wide">
+            Alerts &amp; breakdown
+          </h2>
+          <div class="grid gap-6 xl:grid-cols-2">
           <UCard class="panel-shell rounded-xl" :ui="{ body: 'p-4 sm:p-5' }">
             <template #header>
-              <h2 class="text-highlighted font-semibold">
-                Alerts
-              </h2>
+              <div>
+                <h3 class="text-highlighted text-base font-semibold">
+                  Alerts
+                </h3>
+                <p class="text-muted mt-0.5 text-xs leading-snug">
+                  Unacknowledged items; acknowledge here or from Alerts elsewhere.
+                </p>
+              </div>
             </template>
             <AlertsAlertList
               :alerts="alerts.slice(0, 8)"
@@ -163,9 +192,14 @@ onMounted(() => {
 
           <UCard class="panel-shell rounded-xl" :ui="{ body: 'p-4 sm:p-5' }">
             <template #header>
-              <h2 class="text-highlighted font-semibold">
-                Models &amp; sessions
-              </h2>
+              <div>
+                <h3 class="text-highlighted text-base font-semibold">
+                  Models &amp; sessions
+                </h3>
+                <p class="text-muted mt-0.5 text-xs leading-snug">
+                  Token usage by model, agent status mix, and alert severity.
+                </p>
+              </div>
             </template>
             <div class="grid gap-4 sm:grid-cols-2">
               <div>
@@ -218,14 +252,24 @@ onMounted(() => {
               />
             </div>
           </UCard>
-        </div>
+          </div>
+        </section>
 
-        <UCard class="panel-shell rounded-xl" :ui="{ body: 'p-4 sm:p-5' }">
+        <section aria-labelledby="monitoring-logs-heading">
+          <h2 id="monitoring-logs-heading" class="text-muted mb-3 text-xs font-semibold uppercase tracking-wide">
+            Activity trail
+          </h2>
+          <UCard class="panel-shell rounded-xl" :ui="{ body: 'p-4 sm:p-5' }">
           <template #header>
-            <div class="flex items-center justify-between gap-2">
-              <h2 class="text-highlighted font-semibold">
-                Recent logs
-              </h2>
+            <div class="flex items-start justify-between gap-2">
+              <div>
+                <h3 class="text-highlighted text-base font-semibold">
+                  Recent logs
+                </h3>
+                <p class="text-muted mt-0.5 max-w-md text-xs leading-snug">
+                  Last 12 rows from the feed; open Logs for filters and search.
+                </p>
+              </div>
               <UButton
                 to="/logs"
                 label="Open logs"
@@ -233,11 +277,13 @@ onMounted(() => {
                 variant="ghost"
                 size="xs"
                 trailing-icon="i-lucide-arrow-up-right"
+                class="shrink-0"
               />
             </div>
           </template>
           <LogsLogViewer compact layout="timeline" :logs="recentLogs" :pending="logsPending" />
         </UCard>
+        </section>
       </div>
     </template>
   </UDashboardPanel>

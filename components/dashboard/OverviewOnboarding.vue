@@ -42,7 +42,7 @@ function dismiss() {
     variant="subtle"
     icon="i-lucide-sparkles"
     title="Welcome to Mission Control"
-    description="This Overview shows the system at a glance. Open Monitoring for engineer telemetry, or jump into Diagnostics for raw bridge state."
+    description="This Overview shows the system at a glance. Open Monitoring for engineer telemetry, or jump into Diagnostics for raw bridge state. Documentation links (OpenClaw, UI templates): open the command palette (⌘K or Ctrl+K), then choose External resources."
     :ui="{ root: 'panel-shell rounded-xl' }"
     :close="{ 'aria-label': 'Dismiss welcome banner' }"
     @update:open="(open: boolean) => { if (!open) dismiss() }"
