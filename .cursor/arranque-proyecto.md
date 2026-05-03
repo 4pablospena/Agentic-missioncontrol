@@ -73,3 +73,30 @@ OPENCLAW_GATEWAY_TOKEN=
 - Si `/api/openclaw/agents` devuelve **503** y en cliente ves **ECONNREFUSED** (o el cuerpo incluye `reason: ECONNREFUSED`), el proceso OpenClaw **no está arrancado** en ese host/puerto o las variables apuntan mal.
 - **Dos puertos distintos:** el **503** de agents es Mission Control (Nitro) intentando el WebSocket al gateway (**típico `127.0.0.1:18789`**). Si `curl http://127.0.0.1:3000/...` da **connection refused**, el problema es que **Nuxt no está escuchando en ese puerto** (paraste `npm run dev`, puerto ocupado y Nuxt eligió otro, etc.); arregla el dev server y usa el puerto que muestre el log antes de diagnosticar OpenClaw.
 - Para desarrollar **sin** gateway local, usa `OPENCLAW_BRIDGE_MODE=mock` (datos demo); Mission Control no hace fallback automático de `gateway` a `mock` si el WS falla.
+
+## Workspace browser (read-only)
+
+La fase 5 anade un explorador de ficheros y busqueda global, **deshabilitado por defecto**.
+
+- Variable: `NUXT_WORKSPACE_ROOT` (server-only). Si esta vacia el endpoint devuelve 503 y la UI muestra un empty state.
+- Acceso: requiere sesion autenticada igual que `/api/logs` o `/api/memory`.
+- Endpoints: `GET /api/workspace/tree`, `GET /api/workspace/file`, `GET /api/workspace/search`.
+- Sandbox: el guard en [server/utils/workspace-path.ts](server/utils/workspace-path.ts) rechaza paths absolutos, byte nulo, `..`, segmentos en denylist (`.git`, `node_modules`, `.output`, `.nuxt`, `dist`, `.env`, `.env.local`) y cualquier `realpath` que escape de la raiz (incluye symlinks).
+- Lectura: solo extensiones de texto en allowlist (`.md`, `.json`, `.ts`, `.vue`, etc.). El resto devuelve 415.
+- Limites: profundidad maxima 8, 500 entradas por carpeta, 1 MB por fichero, 2000 ficheros / 200 matches / 4 s en busqueda. Exceder cualquiera marca `truncated: true`.
+- Busqueda: walker puro JS, sin `child_process`, sin shell. Soporta cancelacion con `AbortController` desde el cliente.
+
+Para activarlo en local apunta a una carpeta de confianza:
+
+```bash
+NUXT_WORKSPACE_ROOT=/absolute/path/to/your/workspace
+```
+
+## Notifications inbox
+
+La misma fase anade un centro de notificaciones persistente que escucha al stream realtime existente.
+
+- Tabla: `notifications` (id, type, severity, title, body, payloadJson, read, createdAt). Migracion: `server/db/migrations/0005_phase5_notifications.sql`.
+- Hook: [server/utils/realtime-broadcast.ts](server/utils/realtime-broadcast.ts) persiste automaticamente cuando el `MissionControlEventType` esta en `EVENT_NOTIFICATION_DEFAULTS` (`alert.created`, `task.failed`, `task.completed`, `memory.snapshot.exported`, `memory.snapshot.imported`). El resto de eventos sigue siendo solo wire.
+- Override: cualquier llamada existente puede pasar `{ persist: { severity, title } }` para forzar notificacion, o `{ persist: false }` para suprimirla.
+- UI: campana en el footer de la sidebar (al lado de `DashboardUserMenu`), abre un slideover con tabs `Unread`/`All`, agrupado por dia.
