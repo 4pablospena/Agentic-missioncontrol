@@ -9,6 +9,14 @@ import {
 /** Smallest valid PNG (1×1). */
 const MIN_PNG_BASE64 = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=='
 
+/** Node fetch ignores Set-Cookie; keep session header in sync after mutations. */
+function refreshCookieHeader(prev: string, res: Response): string {
+  const setCookies = res.headers.getSetCookie?.() ?? []
+  if (!setCookies.length)
+    return prev
+  return setCookies.map(c => c.split(';')[0]).filter(Boolean).join('; ')
+}
+
 describe('account profile API (integration)', () => {
   let srv: IntegrationServer
   let cookie: string
@@ -60,36 +68,7 @@ describe('account profile API (integration)', () => {
     expect(res.status).toBe(400)
   })
 
-  it('PATCH /api/account/profile stores HTTPS avatar URL', async () => {
-    const url = 'https://www.w3.org/Icons/valid-xhtml10'
-    const res = await fetch(`${srv.baseUrl}/api/account/profile`, {
-      method: 'PATCH',
-      headers: {
-        Cookie: cookie,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ name: `Avatar User ${Date.now()}`, avatarUrl: url }),
-    })
-    expect(res.ok).toBe(true)
-    const body = await res.json() as { user: { avatarUrl?: string } }
-    expect(body.user.avatarUrl).toBe(url)
-  })
-
-  it('PATCH /api/account/profile clears avatar when avatarUrl is empty', async () => {
-    const res = await fetch(`${srv.baseUrl}/api/account/profile`, {
-      method: 'PATCH',
-      headers: {
-        Cookie: cookie,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ name: `Clear Avatar ${Date.now()}`, avatarUrl: '' }),
-    })
-    expect(res.ok).toBe(true)
-    const body = await res.json() as { user: { avatarUrl?: string } }
-    expect(body.user.avatarUrl).toBeUndefined()
-  })
-
-  it('PATCH /api/account/profile rejects HTTP avatar URL', async () => {
+  it('PATCH /api/account/profile rejects avatarUrl (use upload endpoint only)', async () => {
     const res = await fetch(`${srv.baseUrl}/api/account/profile`, {
       method: 'PATCH',
       headers: {
@@ -97,8 +76,8 @@ describe('account profile API (integration)', () => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        name: 'Bad avatar',
-        avatarUrl: 'http://example.org/x.png',
+        name: `No Url Field ${Date.now()}`,
+        avatarUrl: 'https://example.org/x.png',
       }),
     })
     expect(res.status).toBe(400)
@@ -129,6 +108,23 @@ describe('account profile API (integration)', () => {
     expect(res.ok).toBe(true)
     const body = await res.json() as { user: { avatarUrl?: string } }
     expect(body.user.avatarUrl).toBe('/api/account/avatar')
+    cookie = refreshCookieHeader(cookie, res)
+  })
+
+  it('PATCH /api/account/profile keeps uploaded avatar when changing name only', async () => {
+    const res = await fetch(`${srv.baseUrl}/api/account/profile`, {
+      method: 'PATCH',
+      headers: {
+        Cookie: cookie,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ name: `Renamed With Avatar ${Date.now()}` }),
+    })
+    expect(res.ok).toBe(true)
+    const body = await res.json() as { user: { avatarUrl?: string, name: string } }
+    expect(body.user.avatarUrl).toBe('/api/account/avatar')
+    expect(body.user.name).toMatch(/^Renamed With Avatar /)
+    cookie = refreshCookieHeader(cookie, res)
   })
 
   it('GET /api/account/avatar returns PNG when uploaded', async () => {
@@ -155,6 +151,7 @@ describe('account profile API (integration)', () => {
     expect(res.ok).toBe(true)
     const body = await res.json() as { user: { avatarUrl?: string } }
     expect(body.user.avatarUrl).toBeUndefined()
+    cookie = refreshCookieHeader(cookie, res)
   })
 
   it('GET /api/account/avatar returns 404 after delete', async () => {

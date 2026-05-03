@@ -14,8 +14,6 @@ export interface LoginResponse {
 
 export interface UpdateOperatorProfilePayload {
   name: string
-  /** Omit to leave unchanged; send '' to clear custom avatar. */
-  avatarUrl?: string
 }
 
 export interface UpdateOperatorProfileResponse {
