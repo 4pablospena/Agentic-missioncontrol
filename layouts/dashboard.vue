@@ -5,6 +5,23 @@ const open = ref(false)
 const { public: publicConfig } = useRuntimeConfig()
 const showDiagnostics = publicConfig.showDiagnostics !== false
 const workspaceEnabled = publicConfig.workspaceEnabled === true
+const office3dEnabled = publicConfig.office3dEnabled === true
+const { bridgeLabel, realtimeConnected } = useSystemStatus()
+const statusClock = ref('')
+let statusTimer: ReturnType<typeof setInterval> | undefined
+
+onMounted(() => {
+  const tick = () => {
+    statusClock.value = new Date().toISOString().replace('T', ' ').slice(0, 19)
+  }
+  tick()
+  statusTimer = setInterval(tick, 1000)
+})
+
+onUnmounted(() => {
+  if (statusTimer)
+    clearInterval(statusTimer)
+})
 
 function closeMobileNav() {
   open.value = false
@@ -87,6 +104,14 @@ const primaryGroups: NavigationMenuItem[] = [{
       to: '/chat',
       onSelect: closeMobileNav,
     },
+    ...(office3dEnabled
+      ? [{
+          label: 'Office 3D',
+          icon: 'i-lucide-cuboid',
+          to: '/office',
+          onSelect: closeMobileNav,
+        }]
+      : []),
     ...(workspaceEnabled
       ? [{
           label: 'Workspace',
@@ -132,6 +157,7 @@ const ROUTE_DESCRIPTIONS: Record<string, string> = {
   '/scheduler': 'Cron schedules for recurring tasks',
   '/memory': 'Semantic memory, snapshots, embeddings',
   '/chat': 'Agent conversations and threads',
+  ...(office3dEnabled ? { '/office': '3D office scene (feature-flagged)' } : {}),
   '/account': 'Profile, avatar and session details',
   ...(workspaceEnabled ? { '/workspace': 'Browse files and search content read-only' } : {}),
   ...(showDiagnostics ? { '/diagnostics': 'Raw bridge state and session timeline' } : {}),
@@ -223,6 +249,16 @@ const groups = computed((): CommandPaletteGroup[] => {
     <!-- min-h-0 + flex-1: lets UDashboardPanel body own vertical scroll inside the fixed shell -->
     <div class="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
       <slot />
+      <footer class="dock-shell border-default flex items-center justify-between gap-3 border-t px-4 py-2 text-xs">
+        <div class="text-muted flex items-center gap-3">
+          <span>Mission Control</span>
+          <span>Bridge: {{ bridgeLabel.text }}</span>
+          <span>Realtime: {{ realtimeConnected ? 'online' : 'offline' }}</span>
+        </div>
+        <div class="font-metric text-highlighted">
+          {{ statusClock }}
+        </div>
+      </footer>
     </div>
   </UDashboardGroup>
 </template>

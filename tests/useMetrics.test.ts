@@ -14,6 +14,7 @@ describe('useMetrics', () => {
   const models = [{ model: 'gpt', tokens: 1 }]
   const sessions = [{ status: 'active', count: 2 }]
   const errors = [{ severity: 'warn' as const, count: 3 }]
+  const costs = { totalUsd: 0, byAgent: [], byModel: [], trend: [], anomalies: [] }
 
   beforeEach(() => {
     vi.clearAllMocks()
@@ -25,6 +26,7 @@ describe('useMetrics', () => {
       getModels: vi.fn(async () => models),
       getSessions: vi.fn(async () => sessions),
       getErrors: vi.fn(async () => errors),
+      getCosts: vi.fn(async () => costs),
     }
 
     const wrapper = mount(
@@ -45,6 +47,7 @@ describe('useMetrics', () => {
     expect(wrapper.vm.models).toEqual(models)
     expect(wrapper.vm.sessions).toEqual(sessions)
     expect(wrapper.vm.errors).toEqual(errors)
+    expect(wrapper.vm.costs).toEqual(costs)
 
     wrapper.unmount()
   })
@@ -55,6 +58,7 @@ describe('useMetrics', () => {
       getModels: vi.fn(async () => models),
       getSessions: vi.fn(async () => sessions),
       getErrors: vi.fn(async () => errors),
+      getCosts: vi.fn(async () => costs),
     }
 
     const wrapper = mount(

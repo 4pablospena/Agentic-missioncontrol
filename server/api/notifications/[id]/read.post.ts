@@ -1,4 +1,5 @@
 import { markNotificationRead } from '../../../services/notifications.server'
+import { withApiEnvelope } from '../../../utils/api-envelope'
 
 export default defineEventHandler(async (event) => {
   await requireUserSession(event)
@@ -19,5 +20,5 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  return updated
+  return withApiEnvelope('notifications', updated)
 })

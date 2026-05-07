@@ -1,4 +1,5 @@
 import { listNotifications } from '../../services/notifications.server'
+import { withApiEnvelope } from '../../utils/api-envelope'
 import { notificationsQuerySchema } from '../../utils/notifications-schema'
 
 export default defineEventHandler(async (event) => {
@@ -13,8 +14,9 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  return listNotifications({
+  const notifications = await listNotifications({
     status: parsed.data.status,
     limit: parsed.data.limit,
   })
+  return withApiEnvelope('notifications', notifications)
 })

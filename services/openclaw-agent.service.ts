@@ -5,6 +5,7 @@ import type {
   SendAgentCommandPayload,
 } from '~/models/openclaw'
 import type { ApiClient } from './api-client.service'
+import { unwrapApiEnvelope } from './api-envelope.service'
 
 export interface OpenClawAgentService {
   listAgents(): Promise<Agent[]>
@@ -16,13 +17,15 @@ export interface OpenClawAgentService {
 export function createOpenClawAgentService(client: ApiClient): OpenClawAgentService {
   return {
     listAgents() {
-      return client.get<Agent[]>('/api/openclaw/agents')
+      return client
+        .get<Agent[]>('/api/openclaw/agents')
+        .then(unwrapApiEnvelope)
     },
     async getAgent(agentId: string) {
       try {
-        return await client.get<Agent>(
-          `/api/openclaw/agents/${encodeURIComponent(agentId)}`,
-        )
+        return await client
+          .get<Agent>(`/api/openclaw/agents/${encodeURIComponent(agentId)}`)
+          .then(unwrapApiEnvelope)
       }
       catch (e: unknown) {
         const status
@@ -37,7 +40,9 @@ export function createOpenClawAgentService(client: ApiClient): OpenClawAgentServ
       }
     },
     getHealth() {
-      return client.get<OpenClawHealth>('/api/openclaw/health')
+      return client
+        .get<OpenClawHealth>('/api/openclaw/health')
+        .then(unwrapApiEnvelope)
     },
     sendCommand(agentId: string, payload: SendAgentCommandPayload) {
       return client.post<SendAgentCommandPayload, AgentCommandResult>(

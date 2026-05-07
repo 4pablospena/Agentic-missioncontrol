@@ -4,6 +4,7 @@ import type {
   WorkspaceSearchResult,
 } from '~/models/workspace'
 import type { ApiClient } from '~/services/api-client.service'
+import { unwrapApiEnvelope } from './api-envelope.service'
 
 export interface SearchWorkspaceParams {
   query: string
@@ -25,11 +26,15 @@ export function createWorkspaceService(client: ApiClient): WorkspaceService {
       if (path)
         search.set('path', path)
       const qs = search.toString()
-      return client.get<WorkspaceListing>(`/api/workspace/tree${qs ? `?${qs}` : ''}`)
+      return client
+        .get<WorkspaceListing>(`/api/workspace/tree${qs ? `?${qs}` : ''}`)
+        .then(unwrapApiEnvelope)
     },
     getFile(path: string) {
       const search = new URLSearchParams({ path })
-      return client.get<WorkspaceFile>(`/api/workspace/file?${search.toString()}`)
+      return client
+        .get<WorkspaceFile>(`/api/workspace/file?${search.toString()}`)
+        .then(unwrapApiEnvelope)
     },
     search(params: SearchWorkspaceParams) {
       const search = new URLSearchParams({ q: params.query })
@@ -37,10 +42,12 @@ export function createWorkspaceService(client: ApiClient): WorkspaceService {
         search.set('path', params.path)
       if (params.exts && params.exts.length > 0)
         search.set('exts', params.exts.join(','))
-      return client.get<WorkspaceSearchResult>(
-        `/api/workspace/search?${search.toString()}`,
-        params.signal ? { signal: params.signal } : undefined,
-      )
+      return client
+        .get<WorkspaceSearchResult>(
+          `/api/workspace/search?${search.toString()}`,
+          params.signal ? { signal: params.signal } : undefined,
+        )
+        .then(unwrapApiEnvelope)
     },
   }
 }

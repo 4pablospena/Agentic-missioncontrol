@@ -1,5 +1,6 @@
 import { schedulePatchBodySchema } from '../../utils/schedules-body-schema'
 import { updateSchedule } from '../../services/scheduler.server'
+import { withApiEnvelope } from '../../utils/api-envelope'
 
 export default defineEventHandler(async (event) => {
   await requireUserSession(event)
@@ -21,7 +22,7 @@ export default defineEventHandler(async (event) => {
     if (!updated) {
       throw createError({ statusCode: 404, statusMessage: 'Schedule not found' })
     }
-    return updated
+    return withApiEnvelope('scheduler', updated)
   }
   catch (e: unknown) {
     if (typeof e === 'object' && e !== null && 'statusCode' in e)

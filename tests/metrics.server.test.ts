@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import type { Agent } from '../models/agent'
 import type { Alert } from '../models/alert'
 import {
+  buildCostAnalytics,
   buildErrorSeverities,
   buildModelUsage,
   buildSessionStatuses,
@@ -64,5 +65,13 @@ describe('metrics.server', () => {
     ]
     const r = buildErrorSeverities(alerts)
     expect(r.find(x => x.severity === 'critical')?.count).toBe(1)
+  })
+
+  it('buildCostAnalytics returns byAgent/byModel/trend', () => {
+    const r = buildCostAnalytics(agents)
+    expect(r.totalUsd).toBeGreaterThan(0)
+    expect(r.byAgent[0]?.estimatedUsd).toBeGreaterThan(0)
+    expect(r.byModel.find(x => x.model === 'm1')?.tokens).toBe(15)
+    expect(r.trend).toHaveLength(3)
   })
 })

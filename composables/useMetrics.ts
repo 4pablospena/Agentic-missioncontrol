@@ -1,6 +1,7 @@
 import type { Ref } from 'vue'
 import { readonly, ref, watch } from 'vue'
 import type {
+  CostAnalyticsPayload,
   ErrorSeverityMetric,
   ModelUsageMetric,
   SessionStatusMetric,
@@ -22,6 +23,7 @@ export function useMetrics(options: UseMetricsOptions = {}) {
   const models = ref<ModelUsageMetric[]>([])
   const sessions = ref<SessionStatusMetric[]>([])
   const errors = ref<ErrorSeverityMetric[]>([])
+  const costs = ref<CostAnalyticsPayload | null>(null)
   const pending = ref(false)
   const errorMsg = ref('')
 
@@ -37,16 +39,18 @@ export function useMetrics(options: UseMetricsOptions = {}) {
     errorMsg.value = ''
     try {
       const svc = resolveService()
-      const [t, m, s, e] = await Promise.all([
+      const [t, m, s, e, c] = await Promise.all([
         svc.getTokens(),
         svc.getModels(),
         svc.getSessions(),
         svc.getErrors(),
+        svc.getCosts(),
       ])
       tokens.value = t
       models.value = m
       sessions.value = s
       errors.value = e
+      costs.value = c
     }
     catch (e: unknown) {
       const err = e as { statusMessage?: string, message?: string }
@@ -73,6 +77,7 @@ export function useMetrics(options: UseMetricsOptions = {}) {
     models: readonly(models),
     sessions: readonly(sessions),
     errors: readonly(errors),
+    costs: readonly(costs),
     pending: readonly(pending),
     errorMsg: readonly(errorMsg),
     refresh,

@@ -1,4 +1,5 @@
 import { searchFiles } from '../../services/workspace.server'
+import { withApiEnvelope } from '../../utils/api-envelope'
 import { WorkspaceDisabledError, WorkspacePathError } from '../../utils/workspace-path'
 import { workspaceSearchSchema } from '../../utils/workspace-schema'
 
@@ -15,11 +16,12 @@ export default defineEventHandler(async (event) => {
   }
 
   try {
-    return await searchFiles({
+    const result = await searchFiles({
       query: parsed.data.q,
       path: parsed.data.path,
       exts: parsed.data.exts,
     })
+    return withApiEnvelope('workspace', result)
   }
   catch (err: unknown) {
     if (err instanceof WorkspaceDisabledError) {

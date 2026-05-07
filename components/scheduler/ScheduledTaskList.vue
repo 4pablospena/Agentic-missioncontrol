@@ -10,6 +10,7 @@ const emit = defineEmits<{
   remove: [id: string]
   enable: [id: string]
   disable: [id: string]
+  runNow: [id: string]
 }>()
 </script>
 
@@ -63,6 +64,13 @@ const emit = defineEmits<{
             color="neutral"
             variant="ghost"
             @click="emit('disable', s.id)"
+          />
+          <UButton
+            size="xs"
+            label="Run now"
+            color="primary"
+            variant="soft"
+            @click="emit('runNow', s.id)"
           />
           <UButton
             size="xs"

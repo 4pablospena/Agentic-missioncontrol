@@ -23,6 +23,21 @@ export default defineNuxtConfig({
     openclawGatewayUrl: process.env.OPENCLAW_GATEWAY_URL ?? '',
     openclawGatewayWs: process.env.OPENCLAW_GATEWAY_WS ?? '',
     openclawGatewayToken: process.env.OPENCLAW_GATEWAY_TOKEN ?? '',
+    openclawGatewayClientId: process.env.OPENCLAW_GATEWAY_CLIENT_ID ?? '',
+    openclawGatewayClientMode: process.env.OPENCLAW_GATEWAY_CLIENT_MODE ?? '',
+    /** Comma-separated `connect` scopes (default operator.read,operator.write). E.g. `operator.admin`. */
+    openclawGatewayScopes: process.env.OPENCLAW_GATEWAY_SCOPES ?? '',
+    /** Gateway `connect` role when non-empty (default operator). */
+    openclawGatewayRole: process.env.OPENCLAW_GATEWAY_ROLE ?? '',
+    /** When `true`, omit `scopes` from WS `connect` (try if gateway infers grants). */
+    openclawGatewayOmitConnectScopes: process.env.OPENCLAW_GATEWAY_OMIT_CONNECT_SCOPES ?? '',
+    /** `Authorization: Bearer` on WebSocket upgrade. */
+    openclawGatewayWsBearer: process.env.OPENCLAW_GATEWAY_WS_BEARER ?? '',
+    /**
+     * Host OpenClaw dir (~/.openclaw). When set, `/api/openclaw/agents` falls back to reading
+     * `openclaw.json` if the gateway bridge fails (TenacitOS-style discovery).
+     */
+    openclawDir: process.env.OPENCLAW_DIR ?? '',
     databasePath: process.env.DATABASE_PATH ?? './data/mission-control.db',
     /**
      * Operator login (server-only). Override at runtime with env:
@@ -63,6 +78,8 @@ export default defineNuxtConfig({
     avatarUploadDir: process.env.NUXT_AVATAR_UPLOAD_DIR ?? '',
     public: {
       apiBase: process.env.NUXT_PUBLIC_API_BASE ?? '',
+      office3dEnabled: process.env.NUXT_PUBLIC_OFFICE3D_ENABLED === 'true',
+      advancedAnalyticsEnabled: process.env.NUXT_PUBLIC_ADVANCED_ANALYTICS_ENABLED === 'true',
       /**
        * Hides the Diagnostics route (sidebar entry, command palette, Overview footer button)
        * and serves a 404 from `/diagnostics` when set to `false`. Default `true` so local
@@ -78,6 +95,15 @@ export default defineNuxtConfig({
   },
 
   nitro: {
+    routeRules: {
+      '/**': {
+        headers: {
+          'x-content-type-options': 'nosniff',
+          'x-frame-options': 'DENY',
+          'referrer-policy': 'strict-origin-when-cross-origin',
+        },
+      },
+    },
     experimental: {
       websocket: true,
     },

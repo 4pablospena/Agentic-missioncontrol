@@ -88,6 +88,19 @@ export function useScheduler(options: UseSchedulerOptions = {}) {
     }
   }
 
+  async function runScheduleNow(id: string) {
+    errorMsg.value = ''
+    try {
+      await resolveService().runNow(id)
+      await loadSchedules()
+    }
+    catch (e: unknown) {
+      const err = e as { statusMessage?: string, message?: string }
+      errorMsg.value = err?.statusMessage ?? err?.message ?? 'Unknown error'
+      throw e
+    }
+  }
+
   return {
     schedules: readonly(schedules),
     pending: readonly(pending),
@@ -97,5 +110,6 @@ export function useScheduler(options: UseSchedulerOptions = {}) {
     removeSchedule,
     enableSchedule,
     disableSchedule,
+    runScheduleNow,
   }
 }

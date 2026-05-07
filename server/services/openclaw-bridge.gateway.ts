@@ -10,6 +10,10 @@ import {
   extractChatAssistantText,
   normalizeAgentsListResult,
 } from '../utils/openclaw-gateway-jsonrpc'
+import {
+  fetchAgentsListViaHttp,
+  isMissingScopeGatewayError,
+} from '../utils/openclaw-gateway-http-agents'
 import { OpenClawWsGateway } from '../utils/openclaw-gateway-ws'
 import { createLogEntry } from './logger.server'
 
@@ -18,13 +22,31 @@ export interface GatewayBridgeOptions {
   /** HTTP origin for dashboard / health (same host as gateway). */
   httpBase: string
   token?: string
+  clientId?: string
+  clientMode?: string
+  connectRole?: string
+  connectScopes?: string[]
+  omitConnectScopes?: boolean
+  wsBearerOnUpgrade?: boolean
 }
 
 let sharedWsGateway: OpenClawWsGateway | null = null
 let sharedWsKey = ''
 
-function getSharedWsGateway(opts: { wsUrl: string, token?: string }): OpenClawWsGateway {
-  const key = `${opts.wsUrl}\0${opts.token ?? ''}`
+function getSharedWsGateway(opts: {
+  wsUrl: string
+  token?: string
+  clientId?: string
+  clientMode?: string
+  connectRole?: string
+  connectScopes?: string[]
+  omitConnectScopes?: boolean
+  wsBearerOnUpgrade?: boolean
+}): OpenClawWsGateway {
+  const scopeKey = opts.connectScopes?.join('\x01') ?? ''
+  const omitKey = opts.omitConnectScopes ? '1' : '0'
+  const bearerKey = opts.wsBearerOnUpgrade ? '1' : '0'
+  const key = `${opts.wsUrl}\0${opts.token ?? ''}\0${opts.clientId ?? ''}\0${opts.clientMode ?? ''}\0${opts.connectRole ?? ''}\0${scopeKey}\0${omitKey}\0${bearerKey}`
   if (sharedWsGateway && sharedWsKey === key)
     return sharedWsGateway
   sharedWsGateway?.disconnect()
@@ -40,18 +62,47 @@ function authHeaders(token?: string): Record<string, string> {
 
 export function createGatewayOpenClawBridge(options: GatewayBridgeOptions): OpenClawBridge {
   const httpBase = options.httpBase.replace(/\/$/, '').trim()
-  const ws = getSharedWsGateway({ wsUrl: options.wsUrl, token: options.token })
+  const ws = getSharedWsGateway({
+    wsUrl: options.wsUrl,
+    token: options.token,
+    clientId: options.clientId,
+    clientMode: options.clientMode,
+    connectRole: options.connectRole,
+    connectScopes: options.connectScopes,
+    omitConnectScopes: options.omitConnectScopes,
+    wsBearerOnUpgrade: options.wsBearerOnUpgrade,
+  })
   const auth = authHeaders(options.token)
 
   async function listAgentsRpc(): Promise<Agent[]> {
-    const result = await ws.request('agents.list', {})
-    const agents = normalizeAgentsListResult(result)
-    await createLogEntry({
-      level: 'info',
-      message: 'gateway.agents.list',
-      metadata: { count: agents.length, wsUrl: options.wsUrl },
-    })
-    return agents
+    try {
+      const result = await ws.request('agents.list', {})
+      const agents = normalizeAgentsListResult(result)
+      await createLogEntry({
+        level: 'info',
+        message: 'gateway.agents.list',
+        metadata: { count: agents.length, wsUrl: options.wsUrl, via: 'ws' },
+      })
+      return agents
+    }
+    catch (e) {
+      if (!httpBase || !isMissingScopeGatewayError(e))
+        throw e
+      const viaHttp = await fetchAgentsListViaHttp({ httpBase, headers: auth })
+      if (viaHttp === null)
+        throw e
+      await createLogEntry({
+        level: 'warn',
+        message: 'gateway.agents.list.ws_missing_scope_http_fallback',
+        metadata: { wsUrl: options.wsUrl, httpBase },
+      })
+      await createLogEntry({
+        level: 'info',
+        message: 'gateway.agents.list',
+        metadata: { count: viaHttp.length, via: 'http' },
+      })
+      return viaHttp
+    }
   }
 
   return {

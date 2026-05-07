@@ -159,6 +159,30 @@ export async function setScheduleEnabled(id: string, enabled: boolean): Promise<
   return getSchedule(id)
 }
 
+export async function runScheduleNow(id: string): Promise<ScheduledTask | null> {
+  const schedule = await getSchedule(id)
+  if (!schedule)
+    return null
+  await createTask(schedule.taskTemplate)
+  await createLogEntry({
+    level: 'info',
+    message: `Manual schedule run: ${schedule.taskTemplate.title}`,
+    metadata: { scheduleId: id, source: 'manual' },
+  })
+  const now = nowIso()
+  const next = nextCronRunIso(
+    schedule.cronExpression,
+    new Date(Date.parse(now) + 1),
+  ) ?? schedule.nextRunAt
+  const db = getDb()
+  db.update(taskSchedules).set({
+    lastRunAt: now,
+    nextRunAt: next ?? null,
+    updatedAt: now,
+  }).where(eq(taskSchedules.id, id)).run()
+  return getSchedule(id)
+}
+
 export async function tickSchedules(): Promise<void> {
   const db = getDb()
   const rows = db.select().from(taskSchedules).where(eq(taskSchedules.enabled, true)).all()

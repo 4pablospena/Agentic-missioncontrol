@@ -12,6 +12,7 @@ const {
   removeSchedule,
   enableSchedule,
   disableSchedule,
+  runScheduleNow,
 } = useScheduler()
 
 onMounted(() => {
@@ -21,6 +22,19 @@ onMounted(() => {
 async function onSubmit(payload: ScheduleTaskPayload) {
   await createSchedule(payload)
 }
+
+const weeklyTimeline = computed(() => {
+  const now = Date.now()
+  const weekEnd = now + 7 * 24 * 60 * 60 * 1000
+  return schedules.value
+    .filter((schedule) => {
+      if (!schedule.nextRunAt)
+        return false
+      const ts = Date.parse(schedule.nextRunAt)
+      return Number.isFinite(ts) && ts >= now && ts <= weekEnd
+    })
+    .sort((a, b) => Date.parse(a.nextRunAt ?? '') - Date.parse(b.nextRunAt ?? ''))
+})
 </script>
 
 <template>
@@ -77,9 +91,33 @@ async function onSubmit(payload: ScheduleTaskPayload) {
             @remove="removeSchedule"
             @enable="enableSchedule"
             @disable="disableSchedule"
+            @run-now="runScheduleNow"
           />
         </UCard>
       </div>
+
+      <UCard class="panel-shell mt-6 rounded-xl" :ui="{ body: 'p-4 sm:p-5' }">
+        <template #header>
+          <span class="text-highlighted font-semibold">Weekly timeline</span>
+        </template>
+        <ul v-if="weeklyTimeline.length" class="space-y-2 text-sm">
+          <li
+            v-for="schedule in weeklyTimeline"
+            :key="schedule.id"
+            class="panel-shell-nested flex items-center justify-between gap-2 rounded-lg px-3 py-2"
+          >
+            <span class="text-highlighted">{{ schedule.taskTemplate.title }}</span>
+            <span class="text-muted font-mono text-xs">{{ schedule.nextRunAt }}</span>
+          </li>
+        </ul>
+        <CommonEmptyState
+          v-else
+          title="No upcoming runs this week."
+          description="Schedules with next execution inside 7 days appear here."
+          icon="i-lucide-calendar-clock"
+          variant="compact"
+        />
+      </UCard>
     </template>
   </UDashboardPanel>
 </template>

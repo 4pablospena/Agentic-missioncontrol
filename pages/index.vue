@@ -2,6 +2,7 @@
 definePageMeta({ layout: 'dashboard' })
 
 const { events } = useRealtimeEvents()
+const { bridgeLabel, realtimeConnected, refresh: refreshSystemStatus } = useSystemStatus()
 const { agents, isLoading, refresh: refreshAgents } = useAgents({ events })
 const {
   alerts,
@@ -18,6 +19,16 @@ const {
   pending: tasksPending,
   loadTasks,
 } = useTasks({ events })
+const {
+  tokens,
+  pending: metricsPending,
+  refresh: refreshMetrics,
+} = useMetrics({ events })
+const {
+  unreadCount,
+  loading: notificationsPending,
+  refresh: refreshNotifications,
+} = useNotifications({ events, initialStatus: 'all' })
 
 const openAlerts = computed(() => alerts.value.filter(a => !a.acknowledged))
 const criticalAlerts = computed(() =>
@@ -49,10 +60,13 @@ const { public: publicConfig } = useRuntimeConfig()
 const showDiagnostics = publicConfig.showDiagnostics !== false
 
 function refreshAll() {
+  void refreshSystemStatus()
   void refreshAgents()
   void refreshAlerts()
   void refreshLogs()
   void loadTasks()
+  void refreshMetrics()
+  void refreshNotifications()
 }
 
 onMounted(() => {
@@ -109,6 +123,12 @@ onMounted(() => {
           <span v-if="queuedTasks" class="text-muted text-sm">
             · {{ queuedTasks }} active tasks
           </span>
+          <span class="text-muted text-sm">
+            · bridge: {{ bridgeLabel.text }}
+          </span>
+          <span class="text-muted text-sm">
+            · realtime: {{ realtimeConnected ? 'connected' : 'disconnected' }}
+          </span>
         </section>
 
         <section class="grid gap-4 sm:grid-cols-3">
@@ -126,6 +146,16 @@ onMounted(() => {
             title="Active tasks"
             :value="queuedTasks"
             description="Queued + running"
+          />
+          <MetricsMetricCard
+            title="Unread notifications"
+            :value="unreadCount"
+            :description="notificationsPending ? 'Syncing…' : 'Inbox status'"
+          />
+          <MetricsMetricCard
+            title="Token usage"
+            :value="tokens?.total ?? '—'"
+            :description="metricsPending ? 'Refreshing metrics' : 'Fleet total'"
           />
         </section>
 

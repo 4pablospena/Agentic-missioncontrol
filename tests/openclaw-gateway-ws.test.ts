@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { resolveGatewayEndpoints } from '../server/utils/openclaw-gateway-ws'
+import { parseGatewayConnectScopes, resolveGatewayEndpoints } from '../server/utils/openclaw-gateway-ws'
 
 describe('openclaw-gateway-ws', () => {
   it('resolveGatewayEndpoints derives ws from http', () => {
@@ -32,5 +32,13 @@ describe('openclaw-gateway-ws', () => {
   it('resolveGatewayEndpoints returns null when empty', () => {
     expect(resolveGatewayEndpoints({ gatewayWs: '', gatewayHttp: '' })).toBeNull()
     expect(resolveGatewayEndpoints({ gatewayWs: '   ', gatewayHttp: '' })).toBeNull()
+  })
+
+  it('parseGatewayConnectScopes parses comma list or returns undefined', () => {
+    expect(parseGatewayConnectScopes(undefined)).toBeUndefined()
+    expect(parseGatewayConnectScopes('')).toBeUndefined()
+    expect(parseGatewayConnectScopes('   ')).toBeUndefined()
+    expect(parseGatewayConnectScopes('operator.admin')).toEqual(['operator.admin'])
+    expect(parseGatewayConnectScopes('operator.read, operator.write')).toEqual(['operator.read', 'operator.write'])
   })
 })

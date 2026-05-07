@@ -48,6 +48,8 @@ export default defineConfig({
       NUXT_SESSION_PASSWORD:
         process.env.NUXT_SESSION_PASSWORD ?? '01234567890123456789012345678901',
       OPENCLAW_BRIDGE_MODE: 'mock',
+      NUXT_PUBLIC_OFFICE3D_ENABLED: 'true',
+      NUXT_PUBLIC_ADVANCED_ANALYTICS_ENABLED: 'true',
     },
   },
 })

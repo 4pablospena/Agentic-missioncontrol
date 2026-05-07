@@ -22,9 +22,11 @@ const {
   models,
   sessions,
   errors,
+  costs,
   pending: metricsPending,
   refresh: refreshMetrics,
 } = useMetrics({ events })
+const { public: publicConfig } = useRuntimeConfig()
 
 const tokenSeries = computed<NamedSeriesPoint[]>(() => {
   const t = tokens.value
@@ -36,6 +38,11 @@ const tokenSeries = computed<NamedSeriesPoint[]>(() => {
 const tokenMax = computed(() =>
   Math.max(1, ...tokenSeries.value.map(s => s.value)),
 )
+const advancedAnalyticsEnabled = computed(() => publicConfig.advancedAnalyticsEnabled === true)
+const estimatedCostUsd = computed(() => {
+  const totalTokens = tokens.value?.total ?? 0
+  return (totalTokens * 0.000002).toFixed(4)
+})
 
 function refreshAll() {
   void refresh()
@@ -103,6 +110,62 @@ onMounted(() => {
             :value="recentLogs.length"
             description="Last 12 rows"
           />
+          </div>
+        </section>
+
+        <section v-if="advancedAnalyticsEnabled" aria-labelledby="monitoring-cost-heading">
+          <h2 id="monitoring-cost-heading" class="text-muted mb-3 text-xs font-semibold uppercase tracking-wide">
+            Advanced analytics
+          </h2>
+          <div class="grid gap-4 sm:grid-cols-2">
+            <MetricsMetricCard
+              title="Estimated cost (USD)"
+              :value="`$${costs?.totalUsd ?? estimatedCostUsd}`"
+              description="Approximation based on total tokens"
+            />
+            <MetricsMetricCard
+              title="Top model share"
+              :value="models[0] ? `${models[0].model}` : '—'"
+              :description="models[0] ? `${models[0].tokens} tokens` : 'No model usage yet'"
+            />
+          </div>
+          <div class="mt-4 grid gap-6 xl:grid-cols-3">
+            <UCard class="panel-shell rounded-xl" :ui="{ body: 'p-4' }">
+              <p class="text-muted mb-2 text-xs font-medium uppercase">
+                Cost by agent
+              </p>
+              <ul v-if="costs?.byAgent.length" class="space-y-1 text-sm">
+                <li v-for="row in costs.byAgent.slice(0, 6)" :key="row.agentId" class="flex justify-between gap-2">
+                  <span class="text-highlighted truncate">{{ row.agentName }}</span>
+                  <span class="text-muted font-metric">${{ row.estimatedUsd.toFixed(4) }}</span>
+                </li>
+              </ul>
+              <CommonEmptyState v-else title="No cost data yet." variant="inline" icon="i-lucide-wallet" />
+            </UCard>
+            <UCard class="panel-shell rounded-xl" :ui="{ body: 'p-4' }">
+              <p class="text-muted mb-2 text-xs font-medium uppercase">
+                Cost trend
+              </p>
+              <ul v-if="costs?.trend.length" class="space-y-1 text-sm">
+                <li v-for="point in costs.trend" :key="point.rangeLabel" class="flex justify-between gap-2">
+                  <span class="text-highlighted">{{ point.rangeLabel }}</span>
+                  <span class="text-muted font-metric">${{ point.estimatedUsd.toFixed(4) }}</span>
+                </li>
+              </ul>
+              <CommonEmptyState v-else title="No trend data." variant="inline" icon="i-lucide-chart-line" />
+            </UCard>
+            <UCard class="panel-shell rounded-xl" :ui="{ body: 'p-4' }">
+              <p class="text-muted mb-2 text-xs font-medium uppercase">
+                Usage anomalies
+              </p>
+              <ul v-if="costs?.anomalies.length" class="space-y-1 text-sm">
+                <li v-for="anomaly in costs.anomalies" :key="anomaly.label" class="flex justify-between gap-2">
+                  <span class="text-highlighted">{{ anomaly.label }}</span>
+                  <span class="text-muted font-metric">{{ anomaly.value }}</span>
+                </li>
+              </ul>
+              <CommonEmptyState v-else title="No spikes detected." variant="inline" icon="i-lucide-shield-check" />
+            </UCard>
           </div>
         </section>
 

@@ -31,3 +31,38 @@ export interface ErrorSeverityMetric {
   severity: AlertSeverity
   count: number
 }
+
+export interface CostByAgentMetric {
+  agentId: string
+  agentName: string
+  model: string
+  tokens: number
+  estimatedUsd: number
+}
+
+export interface CostByModelMetric {
+  model: string
+  tokens: number
+  estimatedUsd: number
+}
+
+export interface CostTrendPoint {
+  rangeLabel: string
+  tokens: number
+  estimatedUsd: number
+}
+
+export interface CostAnomaly {
+  type: 'spike'
+  label: string
+  value: number
+  threshold: number
+}
+
+export interface CostAnalyticsPayload {
+  totalUsd: number
+  byAgent: CostByAgentMetric[]
+  byModel: CostByModelMetric[]
+  trend: CostTrendPoint[]
+  anomalies: CostAnomaly[]
+}

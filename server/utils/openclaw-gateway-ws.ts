@@ -1,3 +1,4 @@
+import process from 'node:process'
 import WebSocket from 'ws'
 import { createError } from 'h3'
 import { gatewayConnectionToHttpError } from './openclaw-gateway-errors'
@@ -5,6 +6,19 @@ import { gatewayConnectionToHttpError } from './openclaw-gateway-errors'
 export interface OpenClawWsGatewayOptions {
   wsUrl: string
   token?: string
+  clientId?: string
+  clientMode?: string
+  /** Gateway `connect` role (default `operator`). */
+  connectRole?: string
+  /**
+   * Gateway `connect` scopes. Default `operator.read`, `operator.write`.
+   * Set `OPENCLAW_GATEWAY_SCOPES` when the token only grants e.g. `operator.admin`.
+   */
+  connectScopes?: string[]
+  /** Omit `scopes` from `connect`; env `OPENCLAW_GATEWAY_OMIT_CONNECT_SCOPES=true`. */
+  omitConnectScopes?: boolean
+  /** Send `Authorization: Bearer <token>` on WebSocket upgrade. Env: `OPENCLAW_GATEWAY_WS_BEARER=true`. */
+  wsBearerOnUpgrade?: boolean
 }
 
 interface WSMessage {
@@ -52,6 +66,14 @@ export function resolveGatewayEndpoints(input: {
   return { wsUrl, httpBase: httpBase || '' }
 }
 
+/** Comma-separated env `OPENCLAW_GATEWAY_SCOPES`; empty/unset → use handshake defaults in {@link OpenClawWsGateway}. */
+export function parseGatewayConnectScopes(raw: string | undefined): string[] | undefined {
+  if (raw == null || !String(raw).trim())
+    return undefined
+  const parts = String(raw).split(',').map(s => s.trim()).filter(Boolean)
+  return parts.length ? parts : undefined
+}
+
 /** Control-plane WebSocket client (OpenClaw gateway protocol v3). */
 export class OpenClawWsGateway {
   private ws: WebSocket | null = null
@@ -64,21 +86,39 @@ export class OpenClawWsGateway {
 
   private handshakeParams(): Record<string, unknown> {
     const token = this.options.token?.trim()
-    return {
+    const clientId = this.options.clientId?.trim() || 'openclaw-cli'
+    /** Allowed: webchat | cli | ui | backend | node | probe | test. Use `backend` for headless API clients. */
+    const clientMode = this.options.clientMode?.trim() || 'backend'
+    const role = this.options.connectRole?.trim() || 'operator'
+    const platform = process.platform === 'darwin'
+      ? 'macos'
+      : process.platform === 'win32'
+        ? 'windows'
+        : 'linux'
+    const base: Record<string, unknown> = {
       minProtocol: 3,
       maxProtocol: 3,
       client: {
-        id: 'mission-control',
+        id: clientId,
         version: '1.0.0',
-        platform: 'node',
-        mode: 'operator',
+        platform,
+        mode: clientMode,
       },
-      role: 'operator',
-      scopes: ['operator.read', 'operator.write'],
+      role,
+      caps: [],
+      commands: [],
+      permissions: {},
       auth: token ? { token } : {},
       locale: 'es-ES',
       userAgent: 'mission-control/1.0.0',
     }
+    if (!this.options.omitConnectScopes) {
+      const scopes = this.options.connectScopes?.length
+        ? this.options.connectScopes
+        : ['operator.read', 'operator.write']
+      base.scopes = scopes
+    }
+    return base
   }
 
   private normalizeRejectError(error: unknown): Error | ReturnType<typeof createError> {
@@ -147,7 +187,13 @@ export class OpenClawWsGateway {
 
   private async openSocket(): Promise<void> {
     this.cleanupSocket()
-    const socket = new WebSocket(this.options.wsUrl)
+    const token = this.options.token?.trim()
+    const upgradeHeaders: Record<string, string> = {}
+    if (this.options.wsBearerOnUpgrade && token)
+      upgradeHeaders.Authorization = `Bearer ${token}`
+    const socket = Object.keys(upgradeHeaders).length > 0
+      ? new WebSocket(this.options.wsUrl, { headers: upgradeHeaders })
+      : new WebSocket(this.options.wsUrl)
     this.ws = socket
 
     try {

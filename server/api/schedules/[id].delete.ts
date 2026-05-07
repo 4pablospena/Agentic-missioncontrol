@@ -1,4 +1,5 @@
 import { deleteSchedule } from '../../services/scheduler.server'
+import { withApiEnvelope } from '../../utils/api-envelope'
 
 export default defineEventHandler(async (event) => {
   await requireUserSession(event)
@@ -10,5 +11,5 @@ export default defineEventHandler(async (event) => {
   if (!ok) {
     throw createError({ statusCode: 404, statusMessage: 'Schedule not found' })
   }
-  return { ok: true }
+  return withApiEnvelope('scheduler', { ok: true })
 })

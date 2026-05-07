@@ -1,5 +1,6 @@
 import { scheduleCreateBodySchema } from '../../utils/schedules-body-schema'
 import { createSchedule } from '../../services/scheduler.server'
+import { withApiEnvelope } from '../../utils/api-envelope'
 
 export default defineEventHandler(async (event) => {
   await requireUserSession(event)
@@ -13,7 +14,7 @@ export default defineEventHandler(async (event) => {
     })
   }
   try {
-    return await createSchedule(parsed.data)
+    return withApiEnvelope('scheduler', await createSchedule(parsed.data))
   }
   catch (e: unknown) {
     const msg = e instanceof Error ? e.message : 'Failed to create schedule'

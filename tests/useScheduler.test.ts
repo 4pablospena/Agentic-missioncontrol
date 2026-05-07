@@ -34,6 +34,7 @@ describe('useScheduler', () => {
       delete: vi.fn(),
       enable: vi.fn(),
       disable: vi.fn(),
+      runNow: vi.fn(),
     }
 
     const wrapper = mount(

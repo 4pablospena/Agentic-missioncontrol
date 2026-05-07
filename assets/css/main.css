@@ -16,6 +16,13 @@
   --ui-color-primary-600: #854d0e; /* yellow-800 */
 }
 
+:root {
+  --mc-retro-bg: #0f0f23;
+  --mc-retro-surface: #1a1a2e;
+  --mc-retro-text: #00ff41;
+  --mc-retro-accent: #ff10f0;
+}
+
 .font-metric {
   font-variant-numeric: tabular-nums;
   font-family:
@@ -140,4 +147,36 @@
     radial-gradient(ellipse 130% 90% at 50% -25%, rgb(234 179 8 / 0.10), transparent 55%),
     radial-gradient(ellipse 100% 70% at 100% 40%, rgb(34 211 238 / 0.09), transparent 52%),
     radial-gradient(ellipse 80% 55% at 0% 85%, rgb(250 204 21 / 0.06), transparent 48%);
+}
+
+.dark .panel-shell {
+  position: relative;
+  border-radius: 0;
+}
+
+.dark .panel-shell::after {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  opacity: 0.08;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent 3px,
+    rgb(0 255 65 / 0.5) 4px
+  );
+}
+
+.office-floor {
+  background-image:
+    linear-gradient(to right, rgb(0 255 65 / 0.08) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(255 16 240 / 0.08) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+.office-desk {
+  min-width: 88px;
+  background: color-mix(in oklab, var(--ui-bg-elevated) 92%, transparent);
+  border-color: color-mix(in oklab, var(--ui-primary) 45%, transparent);
 }

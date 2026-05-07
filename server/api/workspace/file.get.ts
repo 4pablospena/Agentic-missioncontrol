@@ -1,4 +1,5 @@
 import { readTextFile } from '../../services/workspace.server'
+import { withApiEnvelope } from '../../utils/api-envelope'
 import { WorkspaceDisabledError, WorkspacePathError } from '../../utils/workspace-path'
 import { workspacePathSchema } from '../../utils/workspace-schema'
 
@@ -21,7 +22,8 @@ export default defineEventHandler(async (event) => {
   }
 
   try {
-    return await readTextFile(parsed.data.path)
+    const file = await readTextFile(parsed.data.path)
+    return withApiEnvelope('workspace', file)
   }
   catch (err: unknown) {
     if (err instanceof WorkspaceDisabledError) {

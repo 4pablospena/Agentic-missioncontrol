@@ -1,5 +1,7 @@
 import { z } from 'zod'
 import type { AuthUser } from '~/models/user'
+import { assertRateLimit } from '../../utils/rate-limit'
+import { logStructured } from '../../utils/structured-log'
 
 const loginSchema = z.object({
   email: z.string().trim().email(),
@@ -7,6 +9,7 @@ const loginSchema = z.object({
 })
 
 export default defineEventHandler(async (event) => {
+  assertRateLimit(event, { key: 'auth.login', limit: 10, windowMs: 60_000 })
   const raw = await readBody(event)
   const parsed = loginSchema.safeParse(raw)
   if (!parsed.success) {
@@ -55,6 +58,10 @@ export default defineEventHandler(async (event) => {
   }
 
   if (!emailOk || !passwordOk) {
+    logStructured('warn', 'auth.login.failed', {
+      route: '/api/auth/login',
+      email: parsed.data.email,
+    })
     throw createError({ statusCode: 401, statusMessage: 'Invalid email or password' })
   }
 

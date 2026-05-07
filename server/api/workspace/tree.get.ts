@@ -1,4 +1,5 @@
 import { listDirectory } from '../../services/workspace.server'
+import { withApiEnvelope } from '../../utils/api-envelope'
 import { WorkspaceDisabledError, WorkspacePathError } from '../../utils/workspace-path'
 import { workspacePathSchema } from '../../utils/workspace-schema'
 
@@ -15,7 +16,8 @@ export default defineEventHandler(async (event) => {
   }
 
   try {
-    return await listDirectory(parsed.data.path)
+    const listing = await listDirectory(parsed.data.path)
+    return withApiEnvelope('workspace', listing)
   }
   catch (err: unknown) {
     if (err instanceof WorkspaceDisabledError) {
