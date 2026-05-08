@@ -33,7 +33,7 @@ onMounted(() => {
         tone="warning"
       />
       <div v-else class="flex flex-col gap-4">
-        <UCard class="panel-shell rounded-xl" :ui="{ body: 'p-4 sm:p-5' }">
+        <UiHudPanel title="Bridge View" subtitle="Live office map and command shortcuts">
           <div class="flex items-center justify-between gap-3">
             <p class="text-highlighted text-sm font-semibold">
               OpenClaw office operations
@@ -51,7 +51,7 @@ onMounted(() => {
           <p class="text-muted mt-2 text-sm">
             3D command center with desks per agent, live status avatars and navigation hotspots.
           </p>
-        </UCard>
+        </UiHudPanel>
 
         <CommonEmptyState
           v-if="!webglSupported || forceFallback"
@@ -63,9 +63,9 @@ onMounted(() => {
 
         <Office3dOfficeScene v-else :agents="agents" />
 
-        <UCard class="panel-shell rounded-xl" :ui="{ body: 'p-4' }">
+        <UiHudPanel title="Hotspots" subtitle="Fast routes to tactical modules">
           <Office3dOfficeHotspots />
-        </UCard>
+        </UiHudPanel>
       </div>
     </template>
   </UDashboardPanel>

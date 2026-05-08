@@ -79,9 +79,9 @@ onMounted(() => {
 
     <template #body>
       <div class="flex flex-col gap-8">
-        <section class="page-toolbar pb-2">
+        <section class="hud-panel panel-shell page-toolbar rounded-xl px-4 py-3">
           <p class="text-muted text-sm leading-snug">
-            Telemetry for engineers: agents, tokens, alerts and recent logs.
+            Telemetry bridge: fleet status, token economy, anomaly watch and mission logs.
           </p>
         </section>
 
@@ -130,9 +130,9 @@ onMounted(() => {
             />
           </div>
           <div class="mt-4 grid gap-6 xl:grid-cols-3">
-            <UCard class="panel-shell rounded-xl" :ui="{ body: 'p-4' }">
+            <UiHudPanel title="Cost by agent" subtitle="Highest spenders in current snapshot">
               <p class="text-muted mb-2 text-xs font-medium uppercase">
-                Cost by agent
+                Agent spend
               </p>
               <ul v-if="costs?.byAgent.length" class="space-y-1 text-sm">
                 <li v-for="row in costs.byAgent.slice(0, 6)" :key="row.agentId" class="flex justify-between gap-2">
@@ -141,8 +141,8 @@ onMounted(() => {
                 </li>
               </ul>
               <CommonEmptyState v-else title="No cost data yet." variant="inline" icon="i-lucide-wallet" />
-            </UCard>
-            <UCard class="panel-shell rounded-xl" :ui="{ body: 'p-4' }">
+            </UiHudPanel>
+            <UiHudPanel title="Cost trend" subtitle="Projected cost across tactical windows">
               <p class="text-muted mb-2 text-xs font-medium uppercase">
                 Cost trend
               </p>
@@ -153,8 +153,8 @@ onMounted(() => {
                 </li>
               </ul>
               <CommonEmptyState v-else title="No trend data." variant="inline" icon="i-lucide-chart-line" />
-            </UCard>
-            <UCard class="panel-shell rounded-xl" :ui="{ body: 'p-4' }">
+            </UiHudPanel>
+            <UiHudPanel title="Usage anomalies" subtitle="Spike detector from current fleet state" :tone="costs?.anomalies.length ? 'critical' : 'default'">
               <p class="text-muted mb-2 text-xs font-medium uppercase">
                 Usage anomalies
               </p>
@@ -165,7 +165,7 @@ onMounted(() => {
                 </li>
               </ul>
               <CommonEmptyState v-else title="No spikes detected." variant="inline" icon="i-lucide-shield-check" />
-            </UCard>
+            </UiHudPanel>
           </div>
         </section>
 

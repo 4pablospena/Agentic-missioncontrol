@@ -6,6 +6,7 @@ const { public: publicConfig } = useRuntimeConfig()
 const showDiagnostics = publicConfig.showDiagnostics !== false
 const workspaceEnabled = publicConfig.workspaceEnabled === true
 const office3dEnabled = publicConfig.office3dEnabled === true
+const advancedAnalyticsEnabled = publicConfig.advancedAnalyticsEnabled === true
 const { bridgeLabel, realtimeConnected } = useSystemStatus()
 const statusClock = ref('')
 let statusTimer: ReturnType<typeof setInterval> | undefined
@@ -248,14 +249,19 @@ const groups = computed((): CommandPaletteGroup[] => {
 
     <!-- min-h-0 + flex-1: lets UDashboardPanel body own vertical scroll inside the fixed shell -->
     <div class="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+      <div class="border-default/70 bg-elevated/50 flex flex-wrap items-center gap-2 border-b px-3 py-2 text-[11px]">
+        <UiHudStatusChip label="Features active" />
+        <UiHudStatusChip :label="`Office3D: ${office3dEnabled ? 'ON' : 'OFF'}`" :tone="office3dEnabled ? 'success' : 'warning'" />
+        <UiHudStatusChip :label="`AdvAnalytics: ${advancedAnalyticsEnabled ? 'ON' : 'OFF'}`" :tone="advancedAnalyticsEnabled ? 'success' : 'warning'" />
+      </div>
       <slot />
       <footer class="dock-shell border-default flex items-center justify-between gap-3 border-t px-4 py-2 text-xs">
-        <div class="text-muted flex items-center gap-3">
-          <span>Mission Control</span>
-          <span>Bridge: {{ bridgeLabel.text }}</span>
-          <span>Realtime: {{ realtimeConnected ? 'online' : 'offline' }}</span>
+        <div class="text-muted flex items-center gap-2">
+          <span class="hud-chip text-highlighted">Mission Control</span>
+          <span class="hud-chip">Bridge: {{ bridgeLabel.text }}</span>
+          <span class="hud-chip">Realtime: {{ realtimeConnected ? 'online' : 'offline' }}</span>
         </div>
-        <div class="font-metric text-highlighted">
+        <div class="font-metric hud-chip text-highlighted">
           {{ statusClock }}
         </div>
       </footer>

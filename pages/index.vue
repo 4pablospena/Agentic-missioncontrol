@@ -97,9 +97,12 @@ onMounted(() => {
 
     <template #body>
       <div class="flex flex-col gap-6">
-        <section class="page-toolbar pb-2">
-          <p class="text-muted text-sm leading-snug">
-            System overview at a glance.
+        <section class="hud-panel panel-shell page-toolbar rounded-xl px-4 py-3">
+          <p class="text-highlighted font-metric text-xs uppercase tracking-[0.18em]">
+            Command Deck
+          </p>
+          <p class="text-muted mt-1 text-sm leading-snug">
+            Spatial operations HUD with live fleet telemetry, alerts and mission traffic.
           </p>
         </section>
 
@@ -131,31 +134,31 @@ onMounted(() => {
           </span>
         </section>
 
-        <section class="grid gap-4 sm:grid-cols-3">
-          <MetricsMetricCard
-            title="Open alerts"
+        <section class="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+          <UiHudMetric
+            label="Open alerts"
             :value="openAlerts.length"
-            :description="criticalAlerts.length ? `${criticalAlerts.length} critical` : 'Unacknowledged'"
+            :hint="criticalAlerts.length ? `${criticalAlerts.length} critical` : 'Unacknowledged'"
           />
-          <MetricsMetricCard
-            title="Agents"
+          <UiHudMetric
+            label="Agents"
             :value="`${agentsTotals.ok}/${agentsTotals.total}`"
-            :description="agentsTotals.degraded ? `${agentsTotals.degraded} degraded` : 'All healthy'"
+            :hint="agentsTotals.degraded ? `${agentsTotals.degraded} degraded` : 'All healthy'"
           />
-          <MetricsMetricCard
-            title="Active tasks"
+          <UiHudMetric
+            label="Active tasks"
             :value="queuedTasks"
-            description="Queued + running"
+            hint="Queued + running"
           />
-          <MetricsMetricCard
-            title="Unread notifications"
+          <UiHudMetric
+            label="Unread notifications"
             :value="unreadCount"
-            :description="notificationsPending ? 'Syncing…' : 'Inbox status'"
+            :hint="notificationsPending ? 'Syncing…' : 'Inbox status'"
           />
-          <MetricsMetricCard
-            title="Token usage"
+          <UiHudMetric
+            label="Token usage"
             :value="tokens?.total ?? '—'"
-            :description="metricsPending ? 'Refreshing metrics' : 'Fleet total'"
+            :hint="metricsPending ? 'Refreshing metrics' : 'Fleet total'"
           />
         </section>
 

@@ -59,12 +59,12 @@ const weeklyTimeline = computed(() => {
     </template>
 
     <template #body>
-      <section class="page-toolbar pb-6">
+      <section class="hud-panel panel-shell page-toolbar rounded-xl px-4 py-4">
         <h2 class="text-highlighted font-semibold tracking-tight">
-          Cron & scheduled jobs
+          Mission Scheduler
         </h2>
         <p class="text-muted mt-1 max-w-2xl text-sm leading-snug">
-          Define payloads and cron expressions mapped to Nitro-backed schedules. Matches the observability shell used across Mission Control.
+          Control recurring automations, force runs and validate next execution windows like a tactical timeline.
         </p>
       </section>
 

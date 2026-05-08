@@ -8,7 +8,7 @@ test.describe('Pivot smoke routes', () => {
 
   test('monitoring renders analytics panels', async ({ page }) => {
     await page.goto('/monitoring')
-    await expect(page.getByText('Telemetry for engineers')).toBeVisible()
+    await expect(page.getByText('Telemetry bridge')).toBeVisible()
   })
 
   test('scheduler supports run-now section', async ({ page }) => {
@@ -25,6 +25,6 @@ test.describe('Pivot smoke routes', () => {
     await page.goto('/office?fallback=1')
     await expect(page.getByText('WebGL not available')).toBeVisible()
     await page.goto('/office')
-    await expect(page.getByText('Office map')).toBeVisible()
+    await expect(page.getByText('Office map', { exact: true })).toBeVisible()
   })
 })
