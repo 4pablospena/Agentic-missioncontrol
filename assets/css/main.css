@@ -1,8 +1,7 @@
 @import "tailwindcss";
 @import "@nuxt/ui";
 
-/* ─── Modern spatial fonts ──────────────────────────────────────────────── */
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+/* Fonts: loaded via `app.head.link` in nuxt.config.ts (avoids invalid @import order after Tailwind/UI inlining). */
 
 /* ═══════════════════════════════════════════════════════════════════════════
    MODERN SPATIAL — DESIGN SYSTEM v4
