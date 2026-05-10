@@ -28,8 +28,8 @@ describe('notifications API (integration)', () => {
       headers: { Cookie: cookie },
     })
     expect(res.ok).toBe(true)
-    const body = await res.json() as unknown
-    expect(Array.isArray(body)).toBe(true)
+    const envelope = await res.json() as { data: unknown[] }
+    expect(Array.isArray(envelope.data)).toBe(true)
   })
 
   it('persists notification after a task.failed alert is posted', async () => {
@@ -54,15 +54,18 @@ describe('notifications API (integration)', () => {
       headers: { Cookie: cookie },
     })
     expect(list.ok).toBe(true)
-    const items = await list.json() as Array<{ type: string, severity: string, title: string }>
-    expect(items.some(n => n.type === 'alert.created' && typeof n.title === 'string')).toBe(true)
+    const envelope = await list.json() as {
+      data: Array<{ type: string, severity: string, title: string }>
+    }
+    expect(envelope.data.some(n => n.type === 'alert.created' && typeof n.title === 'string')).toBe(true)
   })
 
   it('POST /api/notifications/:id/read marks the row as read', async () => {
     const list = await fetch(`${srv.baseUrl}/api/notifications?status=unread&limit=5`, {
       headers: { Cookie: cookie },
     })
-    const items = await list.json() as Array<{ id: string }>
+    const envelope = await list.json() as { data: Array<{ id: string }> }
+    const items = envelope.data
     if (items.length === 0)
       return // nothing unread; skip without failing
 
@@ -73,9 +76,9 @@ describe('notifications API (integration)', () => {
       body: JSON.stringify({}),
     })
     expect(upd.ok).toBe(true)
-    const body = await upd.json() as { id: string, read: boolean }
-    expect(body.id).toBe(id)
-    expect(body.read).toBe(true)
+    const readEnvelope = await upd.json() as { data: { id: string, read: boolean } }
+    expect(readEnvelope.data.id).toBe(id)
+    expect(readEnvelope.data.read).toBe(true)
   })
 
   it('POST /api/notifications/read-all marks remaining unread rows', async () => {
@@ -85,13 +88,13 @@ describe('notifications API (integration)', () => {
       body: JSON.stringify({}),
     })
     expect(upd.ok).toBe(true)
-    const body = await upd.json() as { updated: number }
-    expect(body.updated).toBeGreaterThanOrEqual(0)
+    const envelope = await upd.json() as { data: { updated: number } }
+    expect(envelope.data.updated).toBeGreaterThanOrEqual(0)
 
     const after = await fetch(`${srv.baseUrl}/api/notifications?status=unread`, {
       headers: { Cookie: cookie },
     })
-    const items = await after.json() as Array<{ id: string }>
-    expect(items.length).toBe(0)
+    const afterJson = await after.json() as { data: Array<{ id: string }> }
+    expect(afterJson.data.length).toBe(0)
   })
 })

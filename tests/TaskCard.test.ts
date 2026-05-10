@@ -13,6 +13,13 @@ const stubs = {
     template:
       '<button type="button" class="u-btn" v-bind="$attrs">{{ label }}</button>',
   },
+  RetroCard: { template: '<div><slot /></div>' },
+  RetroBadge: { template: '<span><slot /></span>' },
+  UIcon: { template: '<span />', props: ['name'] },
+  RetroButton: {
+    inheritAttrs: false,
+    template: '<button type="button" class="retro-btn" v-bind="$attrs"><slot /></button>',
+  },
 }
 
 const baseTask: AgentTask = {

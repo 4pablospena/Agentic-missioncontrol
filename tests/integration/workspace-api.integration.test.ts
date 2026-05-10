@@ -19,14 +19,12 @@ describe('workspace API (integration)', () => {
     await writeFile(join(wsRoot, 'README.md'), '# Hello\nIntegration line\n')
     await writeFile(join(wsRoot, 'docs', 'note.md'), 'lorem\nfindme integration\nipsum\n')
 
-    process.env.NUXT_WORKSPACE_ROOT = wsRoot
-    srv = await startIntegrationServer()
+    srv = await startIntegrationServer({ NUXT_WORKSPACE_ROOT: wsRoot })
     cookie = await loginSessionCookie(srv.baseUrl, srv.auth.email, srv.auth.password)
   }, 120_000)
 
   afterAll(async () => {
     srv?.stop()
-    delete process.env.NUXT_WORKSPACE_ROOT
     if (wsRoot)
       await rm(wsRoot, { recursive: true, force: true })
   })
@@ -41,8 +39,10 @@ describe('workspace API (integration)', () => {
       headers: { Cookie: cookie },
     })
     expect(res.ok).toBe(true)
-    const body = await res.json() as { entries: Array<{ name: string, kind: string }> }
-    const names = body.entries.map(e => e.name)
+    const envelope = await res.json() as {
+      data: { entries: Array<{ name: string, kind: string }> }
+    }
+    const names = envelope.data.entries.map(e => e.name)
     expect(names).toContain('README.md')
     expect(names).toContain('docs')
   })
@@ -52,9 +52,9 @@ describe('workspace API (integration)', () => {
       headers: { Cookie: cookie },
     })
     expect(res.ok).toBe(true)
-    const body = await res.json() as { content: string, encoding: string }
-    expect(body.encoding).toBe('utf-8')
-    expect(body.content).toContain('Hello')
+    const envelope = await res.json() as { data: { content: string, encoding: string } }
+    expect(envelope.data.encoding).toBe('utf-8')
+    expect(envelope.data.content).toContain('Hello')
   })
 
   it('GET /api/workspace/search finds matches', async () => {
@@ -62,9 +62,9 @@ describe('workspace API (integration)', () => {
       headers: { Cookie: cookie },
     })
     expect(res.ok).toBe(true)
-    const body = await res.json() as { hits: Array<{ path: string, line: number }> }
-    expect(body.hits.length).toBeGreaterThan(0)
-    expect(body.hits[0]!.path).toBe('docs/note.md')
+    const envelope = await res.json() as { data: { hits: Array<{ path: string, line: number }> } }
+    expect(envelope.data.hits.length).toBeGreaterThan(0)
+    expect(envelope.data.hits[0]!.path).toBe('docs/note.md')
   })
 
   it('GET /api/workspace/file rejects traversal', async () => {

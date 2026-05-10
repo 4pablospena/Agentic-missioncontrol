@@ -132,12 +132,15 @@ describe('tasks & schedules API (integration)', () => {
       }),
     })
     expect(res.ok).toBe(true)
-    const schedule = await res.json() as {
-      id: string
-      cronExpression: string
-      nextRunAt?: string
-      taskTemplate: { title: string }
+    const created = await res.json() as {
+      data: {
+        id: string
+        cronExpression: string
+        nextRunAt?: string
+        taskTemplate: { title: string }
+      }
     }
+    const schedule = created.data
     expect(schedule.taskTemplate.title).toBe(title)
     expect(schedule.cronExpression).toBe('0 * * * *')
     expect(schedule.nextRunAt).toMatch(/\d{4}-/)
@@ -146,7 +149,7 @@ describe('tasks & schedules API (integration)', () => {
       headers: { Cookie: cookie },
     })
     expect(list.ok).toBe(true)
-    const rows = await list.json() as Array<{ id: string }>
-    expect(rows.some(r => r.id === schedule.id)).toBe(true)
+    const listEnvelope = await list.json() as { data: Array<{ id: string }> }
+    expect(listEnvelope.data.some(r => r.id === schedule.id)).toBe(true)
   })
 })

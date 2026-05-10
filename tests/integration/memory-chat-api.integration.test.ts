@@ -51,8 +51,8 @@ describe('memory & chat API (integration)', () => {
     expect(body.some(r => r.memory.content === content)).toBe(true)
   })
 
-  it('POST /api/chat/main/messages returns assistant reply', async () => {
-    const res = await fetch(`${srv.baseUrl}/api/chat/main/messages`, {
+  it('POST /api/chat/sarbina/messages returns assistant reply', async () => {
+    const res = await fetch(`${srv.baseUrl}/api/chat/sarbina/messages`, {
       method: 'POST',
       headers: {
         Cookie: cookie,

@@ -82,6 +82,7 @@ function statusLabel(status: string) {
         <div class="flex gap-1.5" @click.stop>
           <RetroButton
             v-if="task.status === 'failed'"
+            data-testid="task-retry"
             color="cyan"
             variant="outline"
             size="sm"
@@ -92,6 +93,7 @@ function statusLabel(status: string) {
           </RetroButton>
           <RetroButton
             v-if="['queued','running','scheduled'].includes(task.status)"
+            data-testid="task-cancel"
             color="neutral"
             variant="ghost"
             size="sm"

@@ -21,8 +21,12 @@ function sleep(ms: number): Promise<void> {
 /**
  * Starts production Nitro entry (`npm run build` required).
  * Uses an isolated SQLite file under the system temp directory.
+ *
+ * `envOverrides` are merged last so callers can set e.g. `NUXT_WORKSPACE_ROOT`.
  */
-export async function startIntegrationServer(): Promise<IntegrationServer> {
+export async function startIntegrationServer(
+  envOverrides?: Record<string, string>,
+): Promise<IntegrationServer> {
   const port = 31000 + Math.floor(Math.random() * 4000)
   const dbPath = join(tmpdir(), `mc-integration-${randomUUID()}.db`)
   const email = 'integration@test.local'
@@ -50,6 +54,7 @@ export async function startIntegrationServer(): Promise<IntegrationServer> {
         NUXT_SESSION_PASSWORD: sessionPassword,
         NUXT_AVATAR_UPLOAD_DIR: join(tmpdir(), `mc-integration-avatars-${randomUUID()}`),
         OPENCLAW_BRIDGE_MODE: 'mock',
+        ...envOverrides,
       },
       stdio: ['ignore', 'pipe', 'pipe'],
     },
