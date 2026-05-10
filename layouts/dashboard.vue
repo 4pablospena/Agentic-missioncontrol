@@ -68,6 +68,7 @@ function isActive(to: string) {
 
       <!-- Footer -->
       <div class="rs-sidebar__footer">
+        <DashboardNotificationBell :collapsed="false" placement="sidebar" />
         <div class="rs-sidebar__status">
           <span
             class="rs-dot"
@@ -135,6 +136,7 @@ function isActive(to: string) {
         </nav>
 
         <div class="rs-sidebar__footer">
+          <DashboardNotificationBell :collapsed="false" placement="sidebar" />
           <div class="rs-sidebar__status">
             <span
               class="rs-dot"

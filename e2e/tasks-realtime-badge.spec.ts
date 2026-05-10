@@ -5,8 +5,8 @@ import { expect, test } from '@playwright/test'
  * sin validar un evento de negocio concreto por WebSocket.
  */
 test.describe('Tasks realtime badge', () => {
-  test('shows Realtime label', async ({ page }) => {
+  test('shows live connection badge', async ({ page }) => {
     await page.goto('/tasks')
-    await expect(page.getByText(/Realtime/)).toBeVisible({ timeout: 25_000 })
+    await expect(page.getByText(/EN VIVO|OFFLINE/)).toBeVisible({ timeout: 25_000 })
   })
 })

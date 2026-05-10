@@ -3,7 +3,8 @@ import { expect, test } from '@playwright/test'
 test.describe('Pivot smoke routes', () => {
   test('overview renders mission control shell', async ({ page }) => {
     await page.goto('/')
-    await expect(page.getByRole('heading', { name: 'Mission Control' })).toBeVisible()
+    // Brand subtitle is a `<p>`, not a heading (sidebar + retro layout).
+    await expect(page.getByText('Mission Control').first()).toBeVisible()
   })
 
   test('monitoring renders analytics panels', async ({ page }) => {
