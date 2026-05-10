@@ -1,270 +1,324 @@
 <script setup lang="ts">
-import type { CommandPaletteGroup, CommandPaletteItem, NavigationMenuItem } from '@nuxt/ui'
+import type { CreateTaskPayload } from '~/models/task'
 
-const open = ref(false)
-const { public: publicConfig } = useRuntimeConfig()
-const showDiagnostics = publicConfig.showDiagnostics !== false
-const workspaceEnabled = publicConfig.workspaceEnabled === true
-const office3dEnabled = publicConfig.office3dEnabled === true
-const advancedAnalyticsEnabled = publicConfig.advancedAnalyticsEnabled === true
-const { bridgeLabel, realtimeConnected } = useSystemStatus()
-const statusClock = ref('')
-let statusTimer: ReturnType<typeof setInterval> | undefined
+const route = useRoute()
 
-onMounted(() => {
-  const tick = () => {
-    statusClock.value = new Date().toISOString().replace('T', ' ').slice(0, 19)
-  }
-  tick()
-  statusTimer = setInterval(tick, 1000)
-})
+const mobileOpen = ref(false)
+watch(() => route.path, () => { mobileOpen.value = false })
 
-onUnmounted(() => {
-  if (statusTimer)
-    clearInterval(statusTimer)
-})
+const guidedModalOpen = useState('guidedModalOpen', () => false)
+const { realtimeConnected } = useSystemStatus()
 
-function closeMobileNav() {
-  open.value = false
+const { agents, refresh: refreshAgents } = useAgents()
+const { createTask } = useTasks()
+
+onMounted(() => void refreshAgents())
+
+async function onTaskCreate(payload: CreateTaskPayload) {
+  await createTask(payload)
+  guidedModalOpen.value = false
 }
 
-const diagnosticsGroup: NavigationMenuItem = {
-  label: 'Diagnostics',
-  icon: 'i-lucide-wrench',
-  type: 'trigger' as const,
-  children: [{
-    label: 'Bridge & sessions',
-    icon: 'i-lucide-stethoscope',
-    to: '/diagnostics',
-    onSelect: closeMobileNav,
-  }],
+interface NavItem {
+  label: string
+  to: string
+  icon: string
 }
 
-/** Sidebar grouping: Control / Observability / Operations / Context / Diagnostics. */
-const primaryGroups: NavigationMenuItem[] = [{
-  label: 'Control',
-  icon: 'i-lucide-layout-grid',
-  type: 'trigger' as const,
-  defaultOpen: true,
-  children: [{
-    label: 'Overview',
-    icon: 'i-lucide-layout-dashboard',
-    to: '/',
-    onSelect: closeMobileNav,
-  }, {
-    label: 'Agents',
-    icon: 'i-lucide-bot',
-    to: '/agents',
-    onSelect: closeMobileNav,
-  }],
-}, {
-  label: 'Observability',
-  icon: 'i-lucide-activity',
-  type: 'trigger' as const,
-  defaultOpen: true,
-  children: [{
-    label: 'Monitoring',
-    icon: 'i-lucide-gauge',
-    to: '/monitoring',
-    onSelect: closeMobileNav,
-  }, {
-    label: 'Logs',
-    icon: 'i-lucide-scroll-text',
-    to: '/logs',
-    onSelect: closeMobileNav,
-  }],
-}, {
-  label: 'Operations',
-  icon: 'i-lucide-orbit',
-  type: 'trigger' as const,
-  children: [{
-    label: 'Tasks',
-    icon: 'i-lucide-square-kanban',
-    to: '/tasks',
-    onSelect: closeMobileNav,
-  }, {
-    label: 'Scheduler',
-    icon: 'i-lucide-clock',
-    to: '/scheduler',
-    onSelect: closeMobileNav,
-  }],
-}, {
-  label: 'Context',
-  icon: 'i-lucide-layers',
-  type: 'trigger' as const,
-  children: [
-    {
-      label: 'Memory',
-      icon: 'i-lucide-database',
-      to: '/memory',
-      onSelect: closeMobileNav,
-    },
-    {
-      label: 'Chat',
-      icon: 'i-lucide-message-square',
-      to: '/chat',
-      onSelect: closeMobileNav,
-    },
-    ...(office3dEnabled
-      ? [{
-          label: 'Office 3D',
-          icon: 'i-lucide-cuboid',
-          to: '/office',
-          onSelect: closeMobileNav,
-        }]
-      : []),
-    ...(workspaceEnabled
-      ? [{
-          label: 'Workspace',
-          icon: 'i-lucide-folder-tree',
-          to: '/workspace',
-          onSelect: closeMobileNav,
-        }]
-      : []),
-  ],
-}, ...(showDiagnostics ? [diagnosticsGroup] : [])]
+const navItems: NavItem[] = [
+  { label: 'Inicio',   icon: 'i-lucide-home',          to: '/' },
+  { label: 'Agentes',  icon: 'i-lucide-users',         to: '/agents' },
+  { label: 'Misiones', icon: 'i-lucide-list-checks',   to: '/tasks' },
+]
 
-/** Docs / templates: command palette only — keeps the sidebar operator-focused. */
-const externalResourcesItems: CommandPaletteItem[] = [{
-  label: 'OpenClaw docs',
-  icon: 'i-lucide-book-open',
-  description: 'Gateway and worker documentation',
-  to: 'https://docs.openclaw.ai/',
-  target: '_blank',
-}, {
-  label: 'Nuxt UI templates',
-  icon: 'i-lucide-panels-top-left',
-  description: 'Dashboard UI reference',
-  to: 'https://ui.nuxt.com/templates',
-  target: '_blank',
-}]
-
-const links = primaryGroups satisfies NavigationMenuItem[]
-
-function flattenPrimaryNav(items: NavigationMenuItem[]): NavigationMenuItem[] {
-  return items.flatMap((item) => {
-    if (item.children?.length)
-      return item.children as NavigationMenuItem[]
-    return [item]
-  })
+function isActive(to: string) {
+  return to === '/' ? route.path === '/' : route.path.startsWith(to)
 }
-
-const ROUTE_DESCRIPTIONS: Record<string, string> = {
-  '/': 'System overview at a glance',
-  '/agents': 'Fleet tiles and bridge-backed agent monitor',
-  '/monitoring': 'KPIs, agents, alerts, recent logs',
-  '/logs': 'Browse, filter and ingest log streams',
-  '/tasks': 'Kanban board and task execution controls',
-  '/scheduler': 'Cron schedules for recurring tasks',
-  '/memory': 'Semantic memory, snapshots, embeddings',
-  '/chat': 'Agent conversations and threads',
-  ...(office3dEnabled ? { '/office': '3D office scene (feature-flagged)' } : {}),
-  '/account': 'Profile, avatar and session details',
-  ...(workspaceEnabled ? { '/workspace': 'Browse files and search content read-only' } : {}),
-  ...(showDiagnostics ? { '/diagnostics': 'Raw bridge state and session timeline' } : {}),
-}
-
-const accountGroup: CommandPaletteGroup = {
-  id: 'account',
-  label: 'Account',
-  items: [{
-    label: 'Account',
-    icon: 'i-lucide-user-round',
-    description: ROUTE_DESCRIPTIONS['/account'],
-    to: '/account',
-    onSelect: closeMobileNav,
-  }] satisfies CommandPaletteItem[],
-}
-
-const externalResourcesGroup: CommandPaletteGroup = {
-  id: 'external-resources',
-  label: 'External resources',
-  items: externalResourcesItems,
-}
-
-const groups = computed((): CommandPaletteGroup[] => {
-  const primary = flattenPrimaryNav(links).map((item) => {
-    const desc = typeof item.to === 'string' ? ROUTE_DESCRIPTIONS[item.to] : undefined
-    if (desc)
-      return { ...item, description: desc }
-    return item
-  })
-  return [{
-    id: 'links',
-    label: 'Go to',
-    items: primary as CommandPaletteItem[],
-  }, accountGroup, externalResourcesGroup]
-})
 </script>
 
 <template>
-  <UDashboardGroup unit="rem" class="dashboard-canvas min-h-0">
-    <UDashboardSidebar
-      id="default"
-      v-model:open="open"
-      collapsible
-      resizable
-      class="min-h-0 bg-elevated/35 dock-sidebar-border"
-      :ui="{
-        body: '[scrollbar-width:none] [&::-webkit-scrollbar]:hidden',
-      }"
-    >
-      <template #header="{ collapsed }">
-        <div
-          class="flex min-w-0 gap-1.5"
-          :class="collapsed ? 'w-full flex-col items-center' : 'w-full flex-row items-center'"
-        >
-          <DashboardWorkspaceSwitcher :collapsed="collapsed" />
-          <ClientOnly>
-            <DashboardNotificationBell :collapsed="collapsed" placement="header" />
-          </ClientOnly>
+  <div class="dark rs-canvas flex h-screen overflow-hidden">
+
+    <!-- ── Desktop sidebar ────────────────────────────────────────────── -->
+    <aside class="rs-sidebar hidden lg:flex">
+      <!-- Brand -->
+      <div class="rs-sidebar__brand">
+        <div class="rs-logo-mark">
+          <UIcon name="i-lucide-zap" class="size-[18px]" />
         </div>
-      </template>
-
-      <template #default="{ collapsed }">
-        <div class="flex min-h-0 flex-1 flex-col gap-2">
-          <UDashboardSearchButton :collapsed="collapsed" class="bg-transparent ring-default shrink-0" />
-
-          <UNavigationMenu
-            :collapsed="collapsed"
-            :items="links"
-            orientation="vertical"
-            tooltip
-            popover
-            class="min-h-0 flex-1 overflow-y-auto"
-          />
-
-          <!-- Profile + Sign out (session exit lives here only). Docs: command palette → External resources -->
-          <div
-            class="border-default mt-auto flex w-full min-w-0 shrink-0 flex-col gap-2 border-t pt-3 pb-2"
-            :class="collapsed ? 'items-center' : 'px-1'"
-          >
-            <DashboardUserMenu :collapsed="collapsed" class="min-h-0 w-full min-w-0 shrink-0" />
-          </div>
+        <div class="min-w-0 flex-1">
+          <p class="rs-display rs-sidebar__brand-name">Openclaw</p>
+          <p class="rs-sidebar__brand-sub">Mission Control</p>
         </div>
-      </template>
-    </UDashboardSidebar>
-
-    <UDashboardSearch :groups="groups" />
-
-    <!-- min-h-0 + flex-1: lets UDashboardPanel body own vertical scroll inside the fixed shell -->
-    <div class="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
-      <div class="border-default/70 bg-elevated/50 flex flex-wrap items-center gap-2 border-b px-3 py-2 text-[11px]">
-        <UiHudStatusChip label="Features active" />
-        <UiHudStatusChip :label="`Office3D: ${office3dEnabled ? 'ON' : 'OFF'}`" :tone="office3dEnabled ? 'success' : 'warning'" />
-        <UiHudStatusChip :label="`AdvAnalytics: ${advancedAnalyticsEnabled ? 'ON' : 'OFF'}`" :tone="advancedAnalyticsEnabled ? 'success' : 'warning'" />
       </div>
+
+      <!-- Nav -->
+      <nav class="rs-sidebar__nav">
+        <NuxtLink
+          v-for="item in navItems"
+          :key="item.to"
+          :to="item.to"
+          class="rs-nav-item"
+          :class="{ 'rs-nav-item--active': isActive(item.to) }"
+        >
+          <UIcon :name="item.icon" class="size-4 shrink-0" />
+          <span>{{ item.label }}</span>
+        </NuxtLink>
+      </nav>
+
+      <!-- Footer -->
+      <div class="rs-sidebar__footer">
+        <div class="rs-sidebar__status">
+          <span
+            class="rs-dot"
+            :class="realtimeConnected ? 'rs-dot--idle' : 'rs-dot--offline'"
+          />
+          <span
+            class="rs-sidebar__status-label"
+            :style="{ color: realtimeConnected ? 'var(--rs-green-hi)' : 'var(--rs-text-dim)' }"
+          >
+            {{ realtimeConnected ? 'Conectado' : 'Sin señal' }}
+          </span>
+        </div>
+        <DashboardUserMenu :collapsed="false" class="w-full" />
+      </div>
+    </aside>
+
+    <!-- ── Mobile drawer ──────────────────────────────────────────────── -->
+    <Transition
+      enter-active-class="transition duration-200"
+      enter-from-class="opacity-0"
+      leave-active-class="transition duration-150"
+      leave-to-class="opacity-0"
+    >
+      <div
+        v-if="mobileOpen"
+        class="lg:hidden fixed inset-0 z-40 bg-black/70 backdrop-blur-sm"
+        @click="mobileOpen = false"
+      />
+    </Transition>
+
+    <Transition
+      enter-active-class="transition duration-200"
+      enter-from-class="-translate-x-full"
+      leave-active-class="transition duration-150"
+      leave-to-class="-translate-x-full"
+    >
+      <aside
+        v-if="mobileOpen"
+        class="rs-sidebar lg:hidden fixed inset-y-0 left-0 z-50"
+      >
+        <div class="rs-sidebar__brand">
+          <div class="rs-logo-mark">
+            <UIcon name="i-lucide-zap" class="size-[18px]" />
+          </div>
+          <div class="min-w-0 flex-1">
+            <p class="rs-display rs-sidebar__brand-name">Openclaw</p>
+            <p class="rs-sidebar__brand-sub">Mission Control</p>
+          </div>
+          <button class="rs-icon-btn" @click="mobileOpen = false">
+            <UIcon name="i-lucide-x" class="size-4" />
+          </button>
+        </div>
+
+        <nav class="rs-sidebar__nav">
+          <NuxtLink
+            v-for="item in navItems"
+            :key="item.to"
+            :to="item.to"
+            class="rs-nav-item"
+            :class="{ 'rs-nav-item--active': isActive(item.to) }"
+          >
+            <UIcon :name="item.icon" class="size-4 shrink-0" />
+            <span>{{ item.label }}</span>
+          </NuxtLink>
+        </nav>
+
+        <div class="rs-sidebar__footer">
+          <div class="rs-sidebar__status">
+            <span
+              class="rs-dot"
+              :class="realtimeConnected ? 'rs-dot--idle' : 'rs-dot--offline'"
+            />
+            <span
+              class="rs-sidebar__status-label"
+              :style="{ color: realtimeConnected ? 'var(--rs-green-hi)' : 'var(--rs-text-dim)' }"
+            >
+              {{ realtimeConnected ? 'Conectado' : 'Sin señal' }}
+            </span>
+          </div>
+          <DashboardUserMenu :collapsed="false" class="w-full" />
+        </div>
+      </aside>
+    </Transition>
+
+    <!-- ── Main ─────────────────────────────────────────────────────── -->
+    <main class="flex-1 flex flex-col min-w-0 overflow-hidden">
+      <!-- Mobile top bar -->
+      <div class="lg:hidden rs-mobile-bar">
+        <button class="rs-icon-btn" @click="mobileOpen = true">
+          <UIcon name="i-lucide-menu" class="size-5" />
+        </button>
+        <div class="flex items-center gap-2">
+          <UIcon name="i-lucide-zap" class="size-4 rs-glow-indigo" />
+          <p class="rs-display" style="font-size: var(--rs-text-md); font-weight: 600;">Openclaw</p>
+        </div>
+        <div class="w-9" />
+      </div>
+
       <slot />
-      <footer class="dock-shell border-default flex items-center justify-between gap-3 border-t px-4 py-2 text-xs">
-        <div class="text-muted flex items-center gap-2">
-          <span class="hud-chip text-highlighted">Mission Control</span>
-          <span class="hud-chip">Bridge: {{ bridgeLabel.text }}</span>
-          <span class="hud-chip">Realtime: {{ realtimeConnected ? 'online' : 'offline' }}</span>
-        </div>
-        <div class="font-metric hud-chip text-highlighted">
-          {{ statusClock }}
-        </div>
-      </footer>
-    </div>
-  </UDashboardGroup>
+    </main>
+
+    <!-- Global modal -->
+    <TasksGuidedTaskModal
+      v-model:open="guidedModalOpen"
+      :agents="agents"
+      @submit="onTaskCreate"
+    />
+  </div>
 </template>
+
+<style scoped>
+/* ─── Sidebar ────────────────────────────────────────────────────────── */
+.rs-sidebar {
+  flex-direction: column;
+  flex-shrink: 0;
+  width: var(--rs-sidebar-w);
+  background: color-mix(in srgb, var(--rs-bg-2) 80%, var(--rs-surface));
+  border-right: 1px solid var(--rs-border);
+  z-index: 30;
+}
+
+.rs-sidebar__brand {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 1.1rem;
+  border-bottom: 1px solid var(--rs-border);
+}
+
+.rs-sidebar__brand-name {
+  font-size: var(--rs-text-base);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  color: var(--rs-text);
+}
+
+.rs-sidebar__brand-sub {
+  font-family: var(--rs-font-body);
+  font-size: var(--rs-text-2xs);
+  font-weight: 500;
+  color: var(--rs-text-dim);
+  margin-top: 0.2rem;
+  letter-spacing: 0.02em;
+}
+
+.rs-sidebar__nav {
+  flex: 1;
+  padding: 0.85rem 0.6rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  overflow-y: auto;
+}
+
+.rs-sidebar__footer {
+  border-top: 1px solid var(--rs-border);
+  padding: 0.85rem 1rem;
+}
+
+.rs-sidebar__status {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.rs-sidebar__status-label {
+  font-family: var(--rs-font-body);
+  font-size: var(--rs-text-xs);
+  font-weight: 500;
+}
+
+/* ─── Logo mark — modern gradient ─── */
+.rs-logo-mark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  background: linear-gradient(135deg, var(--rs-indigo) 0%, var(--rs-purple) 60%, var(--rs-pink) 100%);
+  color: white;
+  border-radius: var(--rs-radius);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    0 4px 12px rgba(99, 102, 241, 0.35);
+}
+
+/* ─── Nav items ──────────────────────────────────────────────────────── */
+.rs-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.55rem 0.7rem;
+  font-family: var(--rs-font-body);
+  font-size: var(--rs-text-md);
+  font-weight: 500;
+  color: var(--rs-text-muted);
+  text-decoration: none;
+  border-radius: var(--rs-radius);
+  transition: all 150ms ease;
+  position: relative;
+}
+
+.rs-nav-item:hover {
+  color: var(--rs-text);
+  background: var(--rs-surface);
+}
+
+.rs-nav-item--active {
+  color: var(--rs-text) !important;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--rs-indigo) 22%, transparent),
+    color-mix(in srgb, var(--rs-indigo) 8%, transparent) 70%,
+    transparent
+  );
+  box-shadow: inset 2px 0 0 0 var(--rs-indigo);
+}
+
+/* ─── Mobile top bar ─────────────────────────────────────────────────── */
+.rs-mobile-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.65rem 0.85rem;
+  border-bottom: 1px solid var(--rs-border);
+  background: var(--rs-bg-2);
+  flex-shrink: 0;
+}
+
+/* ─── Icon buttons ───────────────────────────────────────────────────── */
+.rs-icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: var(--rs-surface);
+  border: 1px solid var(--rs-border);
+  border-radius: var(--rs-radius);
+  color: var(--rs-text-muted);
+  cursor: pointer;
+  transition: all 150ms;
+  flex-shrink: 0;
+}
+
+.rs-icon-btn:hover {
+  border-color: color-mix(in srgb, var(--rs-indigo) 50%, var(--rs-border));
+  color: var(--rs-text);
+  background: var(--rs-surface-2);
+}
+</style>

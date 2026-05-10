@@ -1,16 +1,24 @@
 <script setup lang="ts">
 import type { AgentTask, TaskStatus } from '~/models/task'
 
-const PIPELINE_META: { status: TaskStatus, title: string }[] = [
-  { status: 'scheduled', title: 'Scheduled' },
-  { status: 'queued', title: 'Queued' },
-  { status: 'running', title: 'Running' },
+type RetroColor = 'pink' | 'cyan' | 'purple' | 'yellow' | 'orange' | 'green' | 'red' | 'neutral'
+
+interface ColumnDef {
+  status: TaskStatus
+  title: string
+  color: RetroColor
+}
+
+const PIPELINE: ColumnDef[] = [
+  { status: 'scheduled', title: 'PROGRAMADAS', color: 'cyan' },
+  { status: 'queued',    title: 'EN COLA',     color: 'neutral' },
+  { status: 'running',   title: 'EN CURSO',    color: 'yellow' },
 ]
 
-const ARCHIVE_META: { status: TaskStatus, title: string }[] = [
-  { status: 'completed', title: 'Completed' },
-  { status: 'failed', title: 'Failed' },
-  { status: 'cancelled', title: 'Cancelled' },
+const ARCHIVE: ColumnDef[] = [
+  { status: 'completed', title: 'COMPLETADAS', color: 'green' },
+  { status: 'failed',    title: 'FALLIDAS',    color: 'red' },
+  { status: 'cancelled', title: 'CANCELADAS',  color: 'neutral' },
 ]
 
 const props = defineProps<{
@@ -24,85 +32,83 @@ const emit = defineEmits<{
   cancel: [id: string]
 }>()
 
-const archiveTotal = computed(() => {
-  const g = props.grouped
-  return (g.completed?.length ?? 0)
-    + (g.failed?.length ?? 0)
-    + (g.cancelled?.length ?? 0)
-})
+const archiveTotal = computed(() =>
+  (props.grouped.completed?.length ?? 0)
+  + (props.grouped.failed?.length ?? 0)
+  + (props.grouped.cancelled?.length ?? 0),
+)
 
 const archiveOpen = ref(false)
-
-let archiveSeeded = false
-
-watch(
-  () => props.tasksPending,
-  (pending, prevPending) => {
-    if (archiveSeeded)
-      return
-    if (pending !== false || prevPending !== true)
-      return
-    archiveSeeded = true
-    archiveOpen.value = archiveTotal.value > 0
-  },
-)
 </script>
 
 <template>
-  <div class="flex flex-col gap-6">
-    <div>
-      <h2 class="text-muted mb-3 text-sm font-semibold">
-        Pipeline
-      </h2>
+  <div class="flex flex-col gap-8">
+    <!-- Pipeline -->
+    <section>
+      <RetroSectionLabel label="Pipeline activo" color="yellow" />
       <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <TasksTaskColumn
-          v-for="col in PIPELINE_META"
+          v-for="col in PIPELINE"
           :key="col.status"
-          emphasis="primary"
           :title="col.title"
           :status="col.status"
+          :color="col.color"
           :tasks="grouped[col.status] ?? []"
           @select="emit('select', $event)"
           @retry="emit('retry', $event)"
           @cancel="emit('cancel', $event)"
         />
       </div>
-    </div>
+    </section>
 
-    <div>
-      <h2 class="text-muted mb-3 text-sm font-semibold">
-        Archive
-      </h2>
-      <UCollapsible v-model:open="archiveOpen" class="flex flex-col gap-3">
-        <UButton
-          class="group w-full justify-between"
+    <!-- Archive -->
+    <section v-if="archiveTotal > 0">
+      <button
+        type="button"
+        class="rs-archive-toggle w-full flex items-center justify-between gap-3 mb-4"
+        @click="archiveOpen = !archiveOpen"
+      >
+        <RetroSectionLabel
+          label="Archivo"
           color="neutral"
-          variant="outline"
-          block
-          :label="`Completed · failed · cancelled (${archiveTotal})`"
-          trailing-icon="i-lucide-chevron-down"
-          :ui="{
-            trailingIcon:
-              'group-data-[state=open]:rotate-180 transition-transform duration-200',
-          }"
+          :count="archiveTotal"
+          class="!mb-0 flex-1"
         />
+        <UIcon
+          :name="archiveOpen ? 'i-lucide-chevron-up' : 'i-lucide-chevron-down'"
+          class="size-4 shrink-0"
+          style="color: var(--rs-text-dim);"
+        />
+      </button>
 
-        <template #content>
-          <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
-            <TasksTaskColumn
-              v-for="col in ARCHIVE_META"
-              :key="col.status"
-              emphasis="muted"
-              :title="col.title"
-              :status="col.status"
-              :tasks="grouped[col.status] ?? []"
-              @select="emit('select', $event)"
-              @retry="emit('retry', $event)"
-              @cancel="emit('cancel', $event)"
-            />
-          </div>
-        </template>
-      </UCollapsible>
-    </div>
+      <div v-show="archiveOpen" class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <TasksTaskColumn
+          v-for="col in ARCHIVE"
+          :key="col.status"
+          :title="col.title"
+          :status="col.status"
+          :color="col.color"
+          :tasks="grouped[col.status] ?? []"
+          @select="emit('select', $event)"
+          @retry="emit('retry', $event)"
+          @cancel="emit('cancel', $event)"
+        />
+      </div>
+    </section>
   </div>
 </template>
+
+<style scoped>
+.rs-archive-toggle {
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  padding: 0;
+  text-align: left;
+}
+
+.rs-archive-toggle:hover :deep(.rs-display) {
+  color: var(--rs-cyan) !important;
+  text-shadow: 0 0 8px var(--rs-cyan);
+}
+</style>

@@ -8,24 +8,61 @@ import type {
 } from '~/models/openclaw'
 import { createLogEntry } from './logger.server'
 
+/**
+ * Mock agents matching the team's character roster.
+ * Names are matched case-insensitively against `AGENT_PROFILES.nameMatch`
+ * in `config/agent-profiles.ts` to get neon colors, icons, etc.
+ */
 const MOCK_AGENTS: Agent[] = [
   {
-    id: 'main',
-    name: 'Main agent',
+    id: 'sarbina',
+    name: 'Sarbina (Sales)',
     status: 'idle',
-    model: 'mock/model',
-    currentAction: undefined,
-    tokenUsage: 0,
+    model: 'claude-sonnet-4',
+    tokenUsage: 24_500,
     lastSeenAt: new Date().toISOString(),
   },
   {
-    id: 'ops',
-    name: 'Ops agent',
+    id: 'mark',
+    name: 'Mark (Marketing)',
     status: 'running',
-    model: 'mock/model',
-    currentAction: 'polling queue',
-    tokenUsage: 1200,
+    model: 'claude-sonnet-4',
+    currentAction: 'Analizando tendencias de LinkedIn',
+    tokenUsage: 18_300,
     lastSeenAt: new Date().toISOString(),
+  },
+  {
+    id: 'odinn',
+    name: 'Odínn (CRM)',
+    status: 'idle',
+    model: 'claude-haiku-4',
+    tokenUsage: 9_120,
+    lastSeenAt: new Date().toISOString(),
+  },
+  {
+    id: 'enzo',
+    name: 'Enzo (Engineering)',
+    status: 'running',
+    model: 'claude-sonnet-4',
+    currentAction: 'Revisando PRs abiertos',
+    tokenUsage: 32_100,
+    lastSeenAt: new Date().toISOString(),
+  },
+  {
+    id: 'penelope',
+    name: 'Penelope (People)',
+    status: 'idle',
+    model: 'claude-haiku-4',
+    tokenUsage: 4_200,
+    lastSeenAt: new Date().toISOString(),
+  },
+  {
+    id: 'destin',
+    name: 'Destin (Design)',
+    status: 'offline',
+    model: 'claude-sonnet-4',
+    tokenUsage: 0,
+    lastSeenAt: new Date(Date.now() - 1000 * 60 * 45).toISOString(),
   },
 ]
 

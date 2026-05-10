@@ -15,8 +15,8 @@ const {
 } = useTasks({ events })
 
 const { agents, refresh: refreshAgents } = useAgents({ events })
-
 const selectedTaskId = ref<string | null>(null)
+const guidedModalOpen = useState('guidedModalOpen', () => false)
 
 const {
   task: detailTask,
@@ -26,153 +26,134 @@ const {
   refresh: refreshDetail,
 } = useTaskDetail(selectedTaskId, { events })
 
-const agentOptions = computed(() =>
-  agents.value.map(a => ({ label: a.name, value: a.id })),
+const activeCount = computed(
+  () => (grouped.value.running?.length ?? 0) + (grouped.value.queued?.length ?? 0),
 )
 
 onMounted(async () => {
-  await refreshAgents()
-  await loadTasks()
+  await Promise.all([refreshAgents(), loadTasks()])
 })
 
 async function onCreate(payload: CreateTaskPayload) {
   await createTask(payload)
 }
 
-function onSelect(id: string) {
-  selectedTaskId.value = id
-}
-
-async function onRetry(id: string) {
-  await retryTask(id)
-  await refreshDetail()
-}
-
-async function onCancel(id: string) {
-  await cancelTask(id)
-  await refreshDetail()
-}
-
-function onCloseDetail() {
-  selectedTaskId.value = null
-}
+function onSelect(id: string) { selectedTaskId.value = id }
+async function onRetry(id: string) { await retryTask(id); await refreshDetail() }
+async function onCancel(id: string) { await cancelTask(id); await refreshDetail() }
+function onCloseDetail() { selectedTaskId.value = null }
 
 const detailOpen = computed({
   get: () => selectedTaskId.value !== null,
-  set: (open: boolean) => {
-    if (!open)
-      onCloseDetail()
-  },
+  set: (open: boolean) => { if (!open) onCloseDetail() },
 })
-
-const detailSlideTitle = computed(() => {
-  if (detailTask.value?.title)
-    return detailTask.value.title
-  if (detailPending.value)
-    return 'Loading…'
-  return 'Task'
-})
-
-const detailSlideDescription = computed(() =>
-  detailTask.value?.description ?? '',
-)
 </script>
 
 <template>
-  <UDashboardPanel id="tasks">
-    <template #header>
-      <UDashboardNavbar title="Tasks" :ui="{ right: 'gap-3' }">
-        <template #leading>
-          <UDashboardSidebarCollapse />
-        </template>
-        <template #right>
-          <UButton
-            icon="i-lucide-refresh-cw"
-            label="Refresh"
-            color="neutral"
-            variant="ghost"
-            size="sm"
-            :loading="pending"
-            @click="loadTasks"
-          />
-        </template>
-      </UDashboardNavbar>
-    </template>
+  <div class="rs-canvas rs-scanlines flex flex-col h-full overflow-hidden">
+    <RetroPageHeader
+      title="Misiones"
+      subtitle="Cola de tareas activa"
+      icon="i-lucide-list-checks"
+      accent-color="cyan"
+    >
+      <template #actions>
+        <RetroBadge
+          v-if="activeCount > 0"
+          color="yellow"
+          size="sm"
+          pulse
+          class="hidden sm:inline-flex"
+        >
+          {{ activeCount }} activas
+        </RetroBadge>
+        <RetroBadge
+          :color="connected ? 'green' : 'neutral'"
+          size="sm"
+          class="hidden md:inline-flex"
+        >
+          {{ connected ? 'EN VIVO' : 'OFFLINE' }}
+        </RetroBadge>
+        <RetroButton
+          color="cyan"
+          variant="outline"
+          size="sm"
+          icon="i-lucide-rotate-ccw"
+          :loading="pending"
+          @click="loadTasks"
+        >
+          <span class="hidden sm:inline">Recargar</span>
+        </RetroButton>
+        <RetroButton
+          color="pink"
+          variant="solid"
+          size="sm"
+          icon="i-lucide-plus"
+          @click="guidedModalOpen = true"
+        >
+          <span class="hidden sm:inline">Nueva orden</span>
+        </RetroButton>
+      </template>
+    </RetroPageHeader>
 
-    <template #body>
-      <div class="flex flex-col gap-8">
-        <section class="page-toolbar flex flex-wrap items-center justify-between gap-3 pb-2">
-          <p class="text-muted text-sm leading-snug">
-            Operations queue. Select a row for drill-down; compose new work below.
-          </p>
-          <UTooltip text="Kanban groups tasks by status. Realtime updates push from the gateway.">
-            <UButton
-              icon="i-lucide-info"
-              color="neutral"
-              variant="ghost"
-              size="xs"
-              square
-              aria-label="How tasks board works"
-            />
-          </UTooltip>
-        </section>
+    <div class="rs-page">
+      <RetroCard v-if="errorMsg" color="red" static class="px-4 py-3">
+        <div class="flex items-center gap-3">
+          <UIcon name="i-lucide-triangle-alert" class="size-5 shrink-0 rs-glow-red" />
+          <p class="rs-body rs-glow-red" style="font-size: 0.95rem;">{{ errorMsg }}</p>
+        </div>
+      </RetroCard>
 
-        <UCard class="panel-shell rounded-xl" :ui="{ body: 'p-4 sm:p-5' }">
-          <template #header>
-            <div class="flex flex-wrap items-center justify-between gap-2">
-              <h2 class="text-highlighted font-semibold">
-                Task board
-              </h2>
-              <UBadge :color="connected ? 'success' : 'neutral'" variant="subtle">
-                Realtime {{ connected ? 'connected' : 'disconnected' }}
-              </UBadge>
-            </div>
-          </template>
+      <TasksTaskBoard
+        :grouped="grouped"
+        :tasks-pending="pending"
+        @select="onSelect"
+        @retry="onRetry"
+        @cancel="onCancel"
+      />
+    </div>
 
-          <UAlert
-            v-if="errorMsg"
-            color="error"
-            variant="soft"
-            title="Could not load tasks"
-            :description="errorMsg"
-            class="mb-4"
-          />
-
-          <TasksTaskBoard
-            :grouped="grouped"
-            :tasks-pending="pending"
-            class="min-h-[320px]"
-            @select="onSelect"
+    <USlideover
+      v-model:open="detailOpen"
+      side="right"
+      :title="detailTask?.title ?? 'MISIÓN'"
+      :ui="{
+        content: 'sm:max-w-xl max-w-lg w-[calc(100%-2rem)]',
+        overlay: 'bg-black/70',
+      }"
+    >
+      <template #body>
+        <div style="background:var(--rs-surface); min-height:100%;">
+          <TasksTaskDetailPanel
+            variant="drawer"
+            :task="detailTask"
+            :events="taskEvents"
+            :logs="relatedLogs"
+            :pending="detailPending"
+            @close="onCloseDetail"
             @retry="onRetry"
             @cancel="onCancel"
           />
-        </UCard>
-
-        <USlideover
-          v-model:open="detailOpen"
-          side="right"
-          inset
-          :title="detailSlideTitle"
-          :description="detailSlideDescription || undefined"
-          :aria-label="detailSlideTitle"
-          :ui="{ content: 'sm:max-w-xl max-w-lg w-[calc(100%-2rem)]' }"
-        >
-          <template #body>
-            <TasksTaskDetailPanel
-              variant="drawer"
-              :task="detailTask"
-              :events="taskEvents"
-              :logs="relatedLogs"
-              :pending="detailPending"
-              @close="onCloseDetail"
-              @retry="onRetry"
-              @cancel="onCancel"
-            />
-          </template>
-        </USlideover>
-
-        <TasksCreateTaskForm :agent-options="agentOptions" @submit="onCreate" />
-      </div>
-    </template>
-  </UDashboardPanel>
+        </div>
+      </template>
+    </USlideover>
+  </div>
 </template>
+
+<style scoped>
+.rs-page {
+  flex: 1;
+  width: 100%;
+  max-width: var(--rs-content-max);
+  margin: 0 auto;
+  padding: 1.5rem var(--rs-page-px) 3rem;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+@media (min-width: 640px) {
+  .rs-page { padding-top: 2rem; }
+}
+</style>
