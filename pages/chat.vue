@@ -3,6 +3,7 @@ import { computed } from 'vue'
 
 definePageMeta({ layout: 'dashboard' })
 
+const route = useRoute()
 const { events, connected } = useRealtimeEvents()
 const { agents, refresh: refreshAgents } = useAgents({ events })
 
@@ -29,6 +30,9 @@ const hasAgent = computed(() => !!String(agentId.value ?? '').trim())
 
 onMounted(async () => {
   await refreshAgents()
+  const q = route.query.agentId
+  if (typeof q === 'string' && q.trim())
+    agentId.value = decodeURIComponent(q.trim())
 })
 
 async function onRefreshChat() {

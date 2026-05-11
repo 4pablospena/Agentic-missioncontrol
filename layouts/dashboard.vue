@@ -7,16 +7,27 @@ const mobileOpen = ref(false)
 watch(() => route.path, () => { mobileOpen.value = false })
 
 const guidedModalOpen = useState('guidedModalOpen', () => false)
+const guidedModalRestrictAgentId = useState<string | null>('guidedModalRestrictAgentId', () => null)
 const { realtimeConnected } = useSystemStatus()
+const { events } = useRealtimeEvents()
 
-const { agents, refresh: refreshAgents } = useAgents()
+const { agents, refresh: refreshAgents } = useAgents({ events })
 const { createTask } = useTasks()
 
 onMounted(() => void refreshAgents())
 
+watch(guidedModalOpen, (open) => {
+  if (!open)
+    guidedModalRestrictAgentId.value = null
+})
+
 async function onTaskCreate(payload: CreateTaskPayload) {
   await createTask(payload)
   guidedModalOpen.value = false
+}
+
+function onClearGuidedRestrict() {
+  guidedModalRestrictAgentId.value = null
 }
 
 interface NavItem {
@@ -34,6 +45,8 @@ const navItems: NavItem[] = [
 function isActive(to: string) {
   return to === '/' ? route.path === '/' : route.path.startsWith(to)
 }
+
+const showAgentRoster = computed(() => route.path.startsWith('/agents'))
 </script>
 
 <template>
@@ -64,6 +77,7 @@ function isActive(to: string) {
           <UIcon :name="item.icon" class="size-4 shrink-0" />
           <span>{{ item.label }}</span>
         </NuxtLink>
+        <DashboardAgentRoster v-if="showAgentRoster" :agents="agents" />
       </nav>
 
       <!-- Footer -->
@@ -133,6 +147,7 @@ function isActive(to: string) {
             <UIcon :name="item.icon" class="size-4 shrink-0" />
             <span>{{ item.label }}</span>
           </NuxtLink>
+          <DashboardAgentRoster v-if="showAgentRoster" :agents="agents" />
         </nav>
 
         <div class="rs-sidebar__footer">
@@ -175,7 +190,9 @@ function isActive(to: string) {
     <TasksGuidedTaskModal
       v-model:open="guidedModalOpen"
       :agents="agents"
+      :restrict-to-agent-id="guidedModalRestrictAgentId"
       @submit="onTaskCreate"
+      @clear-restrict="onClearGuidedRestrict"
     />
   </div>
 </template>

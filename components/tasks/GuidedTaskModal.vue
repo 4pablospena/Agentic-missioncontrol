@@ -4,14 +4,20 @@ import { getProfileForAgent } from '~/config/agent-profiles'
 import type { AgentSummary } from '~/models/agent'
 import type { CreateTaskPayload } from '~/models/task'
 
-const props = defineProps<{
-  agents: AgentSummary[]
-  open: boolean
-}>()
+const props = withDefaults(
+  defineProps<{
+    agents: AgentSummary[]
+    open: boolean
+    /** When set, only templates for this agent id are listed (agent detail screen). */
+    restrictToAgentId?: string | null
+  }>(),
+  { restrictToAgentId: null },
+)
 
 const emit = defineEmits<{
   'update:open': [value: boolean]
   submit: [payload: CreateTaskPayload]
+  'clear-restrict': []
 }>()
 
 const step = ref<1 | 2>(1)
@@ -39,7 +45,13 @@ interface AgentGroup {
 }
 
 const agentGroups = computed<AgentGroup[]>(() => {
-  if (props.agents.length === 0) {
+  const restrictId = (props.restrictToAgentId ?? '').trim()
+
+  const sourceAgents = restrictId
+    ? props.agents.filter(a => a.id === restrictId)
+    : props.agents
+
+  if (props.agents.length === 0 && !restrictId) {
     const groups: Record<string, TaskTemplate[]> = {}
     for (const t of TASK_TEMPLATES) {
       ;(groups[t.agentNameMatch] ??= []).push(t)
@@ -53,7 +65,13 @@ const agentGroups = computed<AgentGroup[]>(() => {
     }))
   }
 
-  return props.agents
+  if (restrictId && sourceAgents.length === 0)
+    return []
+
+  if (sourceAgents.length === 0)
+    return []
+
+  return sourceAgents
     .map((agent) => {
       const profile = getProfileForAgent(agent.name)
       return {
@@ -66,6 +84,10 @@ const agentGroups = computed<AgentGroup[]>(() => {
     })
     .filter(g => g.templates.length > 0)
 })
+
+const restrictedButEmpty = computed(
+  () => !!(props.restrictToAgentId ?? '').trim() && agentGroups.value.length === 0,
+)
 
 function selectTemplate(template: TaskTemplate, agentId: string) {
   selectedTemplate.value = template
@@ -132,7 +154,12 @@ const modelOpen = computed({
                 {{ step === 1 ? '// NUEVA ORDEN' : `// ${selectedTemplate?.name?.toUpperCase()}` }}
               </p>
               <p class="rs-body text-sm mt-1" style="color: var(--rs-text-muted);">
-                {{ step === 1 ? 'Selecciona qué quieres hacer' : selectedTemplate?.description }}
+                <template v-if="step === 1">
+                  {{ restrictToAgentId?.trim() ? 'Tareas disponibles para este agente' : 'Selecciona qué quieres hacer' }}
+                </template>
+                <template v-else>
+                  {{ selectedTemplate?.description }}
+                </template>
               </p>
             </div>
           </div>
@@ -146,11 +173,32 @@ const modelOpen = computed({
           <!-- Step 1: template grid -->
           <div v-if="step === 1">
             <RetroEmptyState
-              v-if="agentGroups.length === 0"
+              v-if="agentGroups.length === 0 && !restrictedButEmpty"
               title="Sin agentes"
               description="No hay agentes disponibles. Comprueba la conexión con Openclaw."
               color="purple"
             />
+
+            <div
+              v-else-if="restrictedButEmpty"
+              class="flex flex-col gap-4 items-stretch"
+            >
+              <RetroEmptyState
+                title="Sin plantillas para este agente"
+                description="No hay tareas guiadas definidas para este nombre de agente, o el agente no está en la lista. Puedes ver todas las plantillas del escuadrón o crear una orden desde Misiones."
+                color="purple"
+              />
+              <RetroButton
+                color="pink"
+                variant="outline"
+                size="md"
+                block
+                icon="i-lucide-users"
+                @click="emit('clear-restrict')"
+              >
+                Ver plantillas de todos los agentes
+              </RetroButton>
+            </div>
 
             <div v-for="group in agentGroups" :key="group.agentName" class="mb-6 last:mb-0">
               <p
