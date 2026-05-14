@@ -61,7 +61,7 @@ onMounted(() => {
     <template #header>
       <UDashboardNavbar title="Monitoring" :ui="{ right: 'gap-2' }">
         <template #leading>
-          <UDashboardSidebarCollapse />
+          <DashboardMobileNavToggle />
         </template>
         <template #right>
           <UButton
@@ -79,11 +79,7 @@ onMounted(() => {
 
     <template #body>
       <div class="flex flex-col gap-8">
-        <section class="hud-panel panel-shell page-toolbar rounded-xl px-4 py-3">
-          <p class="text-muted text-sm leading-snug">
-            Telemetry bridge: fleet status, token economy, anomaly watch and mission logs.
-          </p>
-        </section>
+        <MetricsMonitoringPageIntro />
 
         <section aria-labelledby="monitoring-metrics-heading">
           <h2 id="monitoring-metrics-heading" class="text-muted mb-3 text-xs font-semibold uppercase tracking-wide">

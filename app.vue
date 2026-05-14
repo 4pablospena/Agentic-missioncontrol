@@ -12,7 +12,7 @@ useHead({
     { key: 'theme-color', name: 'theme-color', content: themeColor },
   ],
   htmlAttrs: {
-    lang: 'en',
+    lang: 'es',
   },
 })
 

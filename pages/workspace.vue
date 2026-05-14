@@ -53,7 +53,7 @@ function onSearchInput(q: string) {
     <template #header>
       <UDashboardNavbar title="Workspace" :ui="{ right: 'gap-2' }">
         <template #leading>
-          <UDashboardSidebarCollapse />
+          <DashboardMobileNavToggle />
         </template>
         <template #right>
           <UButton

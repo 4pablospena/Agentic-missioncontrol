@@ -46,7 +46,7 @@ async function onRefreshChat() {
     <template #header>
       <UDashboardNavbar title="Chat" :ui="{ right: 'gap-3' }">
         <template #leading>
-          <UDashboardSidebarCollapse />
+          <DashboardMobileNavToggle />
         </template>
         <template #right>
           <UButton

@@ -20,7 +20,7 @@ onMounted(() => {
     <template #header>
       <UDashboardNavbar title="Office 3D">
         <template #leading>
-          <UDashboardSidebarCollapse />
+          <DashboardMobileNavToggle />
         </template>
       </UDashboardNavbar>
     </template>
@@ -61,7 +61,14 @@ onMounted(() => {
           tone="warning"
         />
 
-        <Office3dOfficeScene v-else :agents="agents" />
+        <ClientOnly v-else>
+          <Office3dOfficeScene :agents="agents" />
+          <template #fallback>
+            <div class="text-muted flex min-h-[200px] items-center justify-center text-sm">
+              Cargando escena 3D…
+            </div>
+          </template>
+        </ClientOnly>
 
         <UiHudPanel title="Hotspots" subtitle="Fast routes to tactical modules">
           <Office3dOfficeHotspots />

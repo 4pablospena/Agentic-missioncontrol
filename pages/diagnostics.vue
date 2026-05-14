@@ -34,7 +34,7 @@ onMounted(() => {
     <template #header>
       <UDashboardNavbar title="Diagnostics" :ui="{ right: 'gap-2' }">
         <template #leading>
-          <UDashboardSidebarCollapse />
+          <DashboardMobileNavToggle />
         </template>
         <template #right>
           <UButton

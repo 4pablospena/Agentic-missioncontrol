@@ -16,8 +16,6 @@ withDefaults(
   <header class="rs-page-header">
     <div class="rs-page-header__content">
       <div class="rs-page-header__title-area">
-        <UDashboardSidebarCollapse class="lg:hidden shrink-0" />
-
         <div
           v-if="icon"
           class="rs-page-header__icon"

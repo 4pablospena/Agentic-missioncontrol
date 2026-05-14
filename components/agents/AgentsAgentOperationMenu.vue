@@ -1,9 +1,8 @@
-<script setup lang="ts">
 import type { AgentProfile } from '~/config/agent-profiles'
 import type { AgentSummary } from '~/models/agent'
+import { useAgentsAgentOperationMenuState } from '~/composables/useAgentsAgentOperationMenuState'
 
 type MenuMode = 'online' | 'unknown' | 'offline'
-type RetroColor = 'pink' | 'cyan' | 'purple' | 'indigo' | 'yellow' | 'orange' | 'green' | 'red' | 'neutral'
 
 const props = defineProps<{
   mode: MenuMode
@@ -17,38 +16,13 @@ const emit = defineEmits<{
   'open-files': []
 }>()
 
-const cardColor = computed<RetroColor>(() => {
-  if (!props.profile)
-    return props.mode === 'unknown' ? 'cyan' : 'neutral'
-  const map: Record<string, RetroColor> = {
-    success: 'green', info: 'cyan', secondary: 'purple',
-    warning: 'yellow', error: 'orange',
-  }
-  return map[props.profile.twColor] ?? 'indigo'
-})
-
-const statusLabel = computed(() => {
-  const map: Record<string, string> = {
-    idle: 'Disponible', running: 'En misión', error: 'Error', offline: 'Offline',
-  }
-  return map[props.agent?.status ?? ''] ?? '—'
-})
-
-const statusBadgeColor = computed<RetroColor>(() => {
-  const map: Record<string, RetroColor> = {
-    idle: 'green', running: 'yellow', error: 'red', offline: 'neutral',
-  }
-  return map[props.agent?.status ?? ''] ?? 'neutral'
-})
-
-const logsHref = computed(() =>
-  props.agent ? `/logs?agentId=${encodeURIComponent(props.agent.id)}` : '/logs',
-)
-
-const chatHref = computed(() =>
-  props.agent ? `/chat?agentId=${encodeURIComponent(props.agent.id)}` : '/chat',
-)
-</script>
+const {
+  cardColor,
+  statusLabel,
+  statusBadgeColor,
+  logsHref,
+  chatHref,
+} = useAgentsAgentOperationMenuState(toRefs(props))
 
 <template>
   <RetroCard :color="cardColor" static class="ag-ops">

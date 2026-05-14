@@ -102,7 +102,7 @@ async function addSampleLog() {
     <template #header>
       <UDashboardNavbar title="Logs" :ui="{ right: 'gap-3' }">
         <template #leading>
-          <UDashboardSidebarCollapse />
+          <DashboardMobileNavToggle />
         </template>
         <template #right>
           <UButton

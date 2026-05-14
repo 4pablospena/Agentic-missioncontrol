@@ -4,9 +4,10 @@ Quick pass before a release or large UI change. Not automated; run in the browse
 
 ## Layout and sidebar
 
-- Collapse and expand the sidebar; icons and tooltips behave when collapsed.
-- Resize the sidebar (if enabled); content panels still scroll correctly (`min-h-0` chain).
-- Command palette opens (⌘K / Ctrl+K); internal routes and External resources resolve.
+- Desktop: primary sidebar stays visible; nav highlights match the current route.
+- Mobile (~375px): open the drawer from the top bar menu or the in-page menu control; **Escape** closes it; backdrop tap closes. Optional: use **Saltar al contenido** (skip link) to focus the main region.
+- Resize behavior: main content uses `min-h-0` / overflow chains so panels scroll inside the shell.
+- **Command palette (⌘K)** is not mounted in this app shell (no `UDashboardSearch`). Use sidebar navigation, in-page search (Memory, Workspace, Logs), and direct URLs for internal routes.
 
 ## Breakpoints
 

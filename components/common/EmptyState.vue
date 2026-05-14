@@ -108,6 +108,7 @@ const containerClass = computed(() => {
       variant="outline"
       size="sm"
       class="mt-1"
+      :type="cta.to ? undefined : 'button'"
       @click="cta.onClick?.()"
     />
   </div>

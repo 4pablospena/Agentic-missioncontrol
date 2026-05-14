@@ -41,8 +41,8 @@ function dismiss() {
     color="neutral"
     variant="subtle"
     icon="i-lucide-sparkles"
-    title="Welcome to Mission Control"
-    description="This Overview shows the system at a glance. Open Monitoring for engineer telemetry, or jump into Diagnostics for raw bridge state. Documentation links (OpenClaw, UI templates): open the command palette (⌘K or Ctrl+K), then choose External resources."
+    title="Bienvenido a Mission Control"
+    description="Aquí ves el estado del sistema de un vistazo. Abre Monitoring para telemetría e ingeniería, o Diagnostics para el estado crudo del bridge. La navegación principal está en la barra lateral; en móvil, usa el menú (arriba a la izquierda)."
     :ui="{ root: 'panel-shell rounded-xl' }"
     :close="{ 'aria-label': 'Dismiss welcome banner' }"
     @update:open="(open: boolean) => { if (!open) dismiss() }"
@@ -50,7 +50,7 @@ function dismiss() {
     <template #actions>
       <UButton
         to="/monitoring"
-        label="Explore Monitoring"
+        label="Ir a Monitoring"
         color="neutral"
         variant="outline"
         size="xs"
@@ -59,7 +59,7 @@ function dismiss() {
       <UButton
         v-if="showDiagnostics"
         to="/diagnostics"
-        label="Open Diagnostics"
+        label="Abrir Diagnostics"
         color="neutral"
         variant="ghost"
         size="xs"

@@ -42,7 +42,7 @@ const weeklyTimeline = computed(() => {
     <template #header>
       <UDashboardNavbar title="Scheduler" :ui="{ right: 'gap-3' }">
         <template #leading>
-          <UDashboardSidebarCollapse />
+          <DashboardMobileNavToggle />
         </template>
         <template #right>
           <UButton
