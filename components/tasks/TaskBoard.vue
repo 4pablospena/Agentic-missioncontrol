@@ -42,7 +42,10 @@ const archiveOpen = ref(false)
 </script>
 
 <template>
-  <div class="flex flex-col gap-8">
+  <div v-if="tasksPending" class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+    <div v-for="i in 3" :key="i" class="rs-skeleton h-64 rounded-lg" />
+  </div>
+  <div v-else class="flex flex-col gap-8">
     <!-- Pipeline -->
     <section>
       <RetroSectionLabel label="Pipeline activo" color="yellow" />

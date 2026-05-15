@@ -4,45 +4,45 @@
 /* Fonts: loaded via `app.head.link` in nuxt.config.ts (avoids invalid @import order after Tailwind/UI inlining). */
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   MODERN SPATIAL — DESIGN SYSTEM v4
-   Inspirado en Linear, Anthropic Console, Vercel — limpio, espacial, moderno
+   MISSION CONTROL — DESIGN SYSTEM v5
+   Tipografía: Outfit (display) + DM Sans (body). Acento dominante teal, secundario ámbar.
    ═══════════════════════════════════════════════════════════════════════════ */
 
 :root {
-  /* ─── Background ─── */
-  --rs-bg:           #0a0c14;
-  --rs-bg-2:         #0f111c;
-  --rs-surface:      #141828;
-  --rs-surface-2:    #1a1f33;
-  --rs-surface-3:    #232a42;
-  --rs-border:       #232a42;
-  --rs-border-soft:  #1a1f33;
-  --rs-border-hi:    #2e3552;
+  /* ─── Background — deep navy with warmth ─── */
+  --rs-bg:           #07090f;
+  --rs-bg-2:         #0c1019;
+  --rs-surface:      #121822;
+  --rs-surface-2:    #181f2e;
+  --rs-surface-3:    #222b3d;
+  --rs-border:       #252f42;
+  --rs-border-soft:  #1a2230;
+  --rs-border-hi:    #334155;
 
-  /* ─── Accent palette — modern violet/indigo/cyan ─── */
-  --rs-pink:         #ec4899;   /* less hot, more refined pink */
-  --rs-pink-hi:      #f472b6;
-  --rs-cyan:         #22d3ee;   /* cleaner cyan */
-  --rs-cyan-hi:      #67e8f9;
-  --rs-purple:       #a855f7;   /* modern violet */
-  --rs-purple-hi:    #c084fc;
-  --rs-indigo:       #6366f1;   /* primary brand */
-  --rs-indigo-hi:    #818cf8;
-  --rs-yellow:       #eab308;   /* refined gold */
+  /* ─── Accent palette — teal primary, amber secondary, vivid supports ─── */
+  --rs-pink:         #f43f8a;
+  --rs-pink-hi:      #fb7185;
+  --rs-cyan:         #2dd4bf;
+  --rs-cyan-hi:      #5eead4;
+  --rs-purple:       #c084fc;
+  --rs-purple-hi:    #e9d5ff;
+  --rs-indigo:       #14b8a6;
+  --rs-indigo-hi:    #2dd4bf;
+  --rs-yellow:       #f59e0b;
   --rs-yellow-hi:    #fbbf24;
-  --rs-orange:       #f97316;
-  --rs-green:        #10b981;   /* emerald */
-  --rs-green-hi:     #34d399;
-  --rs-red:          #ef4444;
+  --rs-orange:       #fb923c;
+  --rs-green:        #22c55e;
+  --rs-green-hi:     #4ade80;
+  --rs-red:          #f87171;
 
   /* ─── Text ─── */
-  --rs-text:         #f1f5f9;
+  --rs-text:         #f8fafc;
   --rs-text-muted:   #94a3b8;
   --rs-text-dim:     #64748b;
 
-  /* ─── Modern type system ─── */
-  --rs-font-display: 'Space Grotesk', 'Inter', system-ui, sans-serif;  /* geometric, slightly futuristic */
-  --rs-font-body:    'Inter', system-ui, sans-serif;                    /* clean, modern UI standard */
+  /* ─── Type (loaded in nuxt.config app.head) ─── */
+  --rs-font-display: 'Outfit', system-ui, sans-serif;
+  --rs-font-body:    'DM Sans', system-ui, sans-serif;
   --rs-font-mono:    'JetBrains Mono', ui-monospace, monospace;
 
   /* ─── Type scale ─── */
@@ -106,7 +106,7 @@ html, body, #__nuxt {
   --ui-text-highlighted: var(--rs-text);
   --ui-color-primary-500: var(--rs-indigo);
   --ui-color-primary-400: var(--rs-indigo-hi);
-  --ui-color-primary-600: #4f46e5;
+  --ui-color-primary-600: #0d9488;
   --ui-radius: var(--rs-radius);
 }
 
@@ -117,7 +117,7 @@ html, body, #__nuxt {
 .rs-canvas {
   position: relative;
   background:
-    radial-gradient(ellipse 100% 60% at 50% 100%, rgba(99, 102, 241, 0.10) 0%, transparent 65%),
+    radial-gradient(ellipse 100% 60% at 50% 100%, rgba(20, 184, 166, 0.12) 0%, transparent 65%),
     radial-gradient(ellipse 80% 50% at 50% 0%, rgba(168, 85, 247, 0.06) 0%, transparent 60%),
     radial-gradient(circle at 18% 30%, rgba(34, 211, 238, 0.04) 0%, transparent 30%),
     var(--rs-bg);
@@ -284,6 +284,35 @@ html, body, #__nuxt {
 
 @media (min-width: 640px) { .rs-page { padding-top: 2rem; gap: 2.5rem; } }
 
+.rs-page-shell {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+}
+
+/* Staggered entrance for pilot screens (Inicio cards) */
+@keyframes rs-fade-up {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.rs-stagger > * {
+  animation: rs-fade-up 0.45s ease both;
+}
+
+.rs-stagger > *:nth-child(1) { animation-delay: 0.04s; }
+.rs-stagger > *:nth-child(2) { animation-delay: 0.08s; }
+.rs-stagger > *:nth-child(3) { animation-delay: 0.12s; }
+.rs-stagger > *:nth-child(4) { animation-delay: 0.16s; }
+.rs-stagger > *:nth-child(5) { animation-delay: 0.2s; }
+.rs-stagger > *:nth-child(6) { animation-delay: 0.24s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .rs-stagger > * {
+    animation: none;
+  }
+}
+
 .rs-grid {
   display: grid;
   grid-template-columns: 1fr;
@@ -313,7 +342,7 @@ html, body, #__nuxt {
 }
 ::-webkit-scrollbar-thumb:hover { background: var(--rs-indigo); }
 
-::selection { background: rgba(99, 102, 241, 0.4); color: var(--rs-text); }
+::selection { background: rgba(20, 184, 166, 0.45); color: var(--rs-text); }
 
 /* ═══════════════════════════════════════════════════════════════════════════
    LEGACY HELPERS

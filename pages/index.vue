@@ -48,15 +48,13 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="rs-canvas flex flex-col h-full overflow-auto">
-    <!-- Header -->
-    <RetroPageHeader
-      :title="`${greeting}, comandante`"
-      subtitle="Selecciona un agente para desplegar una misión"
-      icon="i-lucide-radio-tower"
-      accent-color="indigo"
-    >
-      <template #actions>
+  <DashboardPageShell
+    :title="`${greeting}, comandante`"
+    subtitle="Selecciona un agente para desplegar una misión"
+    icon="i-lucide-radio-tower"
+    accent-color="indigo"
+  >
+    <template #actions>
         <RetroBadge
           v-if="activeTasks > 0"
           color="yellow"
@@ -73,11 +71,9 @@ onMounted(async () => {
         >
           {{ onlineCount }} online
         </RetroBadge>
-      </template>
-    </RetroPageHeader>
+    </template>
 
-    <div class="rs-page">
-      <ClientOnly>
+    <ClientOnly>
         <DashboardOverviewOnboarding :show-diagnostics="showDiagnosticsOnboarding" class="mb-6" />
       </ClientOnly>
       <!-- ── Agentes ─── -->
@@ -113,7 +109,7 @@ onMounted(async () => {
           color="purple"
         />
 
-        <div v-else class="rs-grid">
+        <div v-else class="rs-grid rs-stagger">
           <AgentsAgentCharacterCard
             v-for="panel in agentPanels"
             :key="panel.agent.id"
@@ -223,8 +219,7 @@ onMounted(async () => {
           </NuxtLink>
         </RetroCard>
       </section>
-    </div>
-  </div>
+  </DashboardPageShell>
 </template>
 
 <style scoped>

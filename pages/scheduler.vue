@@ -38,33 +38,33 @@ const weeklyTimeline = computed(() => {
 </script>
 
 <template>
-  <UDashboardPanel id="scheduler">
-    <template #header>
-      <UDashboardNavbar title="Scheduler" :ui="{ right: 'gap-3' }">
-        <template #leading>
-          <DashboardMobileNavToggle />
-        </template>
-        <template #right>
-          <UButton
-            icon="i-lucide-refresh-cw"
-            label="Refresh"
-            color="neutral"
-            variant="ghost"
-            size="sm"
-            :loading="pending"
-            @click="loadSchedules"
-          />
-        </template>
-      </UDashboardNavbar>
+  <DashboardPageShell
+    title="Programador"
+    subtitle="Automatizaciones recurrentes y ejecuciones forzadas"
+    icon="i-lucide-calendar-clock"
+    accent-color="yellow"
+  >
+    <template #actions>
+      <RetroButton
+        color="yellow"
+        variant="ghost"
+        size="sm"
+        icon="i-lucide-rotate-ccw"
+        :loading="pending"
+        type="button"
+        @click="loadSchedules"
+      >
+        <span class="hidden sm:inline">Actualizar</span>
+      </RetroButton>
     </template>
 
-    <template #body>
+    <div class="flex flex-col gap-6">
       <section class="hud-panel panel-shell page-toolbar rounded-xl px-4 py-4">
         <h2 class="text-highlighted font-semibold tracking-tight">
-          Mission Scheduler
+          Programador de misiones
         </h2>
         <p class="text-muted mt-1 max-w-2xl text-sm leading-snug">
-          Control recurring automations, force runs and validate next execution windows like a tactical timeline.
+          Controla automatizaciones recurrentes, fuerza ejecuciones y revisa la ventana de la próxima corrida.
         </p>
       </section>
 
@@ -73,14 +73,14 @@ const weeklyTimeline = computed(() => {
 
         <UCard class="panel-shell rounded-xl" :ui="{ body: 'p-4 sm:p-5' }">
           <template #header>
-            <span class="text-highlighted font-semibold">Schedules</span>
+            <span class="text-highlighted font-semibold">Programaciones</span>
           </template>
 
           <UAlert
             v-if="errorMsg"
             color="error"
             variant="soft"
-            title="Scheduler error"
+            title="Error del programador"
             :description="errorMsg"
             class="mb-4"
           />
@@ -98,7 +98,7 @@ const weeklyTimeline = computed(() => {
 
       <UCard class="panel-shell mt-6 rounded-xl" :ui="{ body: 'p-4 sm:p-5' }">
         <template #header>
-          <span class="text-highlighted font-semibold">Weekly timeline</span>
+          <span class="text-highlighted font-semibold">Línea temporal semanal</span>
         </template>
         <ul v-if="weeklyTimeline.length" class="space-y-2 text-sm">
           <li
@@ -112,12 +112,12 @@ const weeklyTimeline = computed(() => {
         </ul>
         <CommonEmptyState
           v-else
-          title="No upcoming runs this week."
-          description="Schedules with next execution inside 7 days appear here."
+          title="Sin ejecuciones esta semana"
+          description="Las programaciones con próxima ejecución en 7 días aparecen aquí."
           icon="i-lucide-calendar-clock"
           variant="compact"
         />
       </UCard>
-    </template>
-  </UDashboardPanel>
+    </div>
+  </DashboardPageShell>
 </template>

@@ -154,28 +154,25 @@ onMounted(() => void refresh())
 </script>
 
 <template>
-  <div class="rs-canvas flex flex-col h-full overflow-auto">
-    <RetroPageHeader
-      :title="pageTitle"
-      :subtitle="headerSubtitle"
-      icon="i-lucide-user-cog"
-      accent-color="purple"
-    >
-      <template #actions>
-        <RetroButton
-          color="cyan"
-          variant="outline"
-          size="sm"
-          icon="i-lucide-rotate-ccw"
-          :loading="isLoading"
-          @click="refresh"
-        >
-          <span class="hidden sm:inline">Actualizar</span>
-        </RetroButton>
-      </template>
-    </RetroPageHeader>
+  <DashboardPageShell
+    :title="pageTitle"
+    :subtitle="headerSubtitle"
+    icon="i-lucide-user-cog"
+    accent-color="purple"
+  >
+    <template #actions>
+      <RetroButton
+        color="cyan"
+        variant="outline"
+        size="sm"
+        icon="i-lucide-rotate-ccw"
+        :loading="isLoading"
+        @click="refresh"
+      >
+        <span class="hidden sm:inline">Actualizar</span>
+      </RetroButton>
+    </template>
 
-    <div class="rs-page">
       <RetroCard v-if="error" color="red" static class="px-4 py-3">
         <div class="flex items-center gap-3">
           <UIcon name="i-lucide-triangle-alert" class="size-5 shrink-0 rs-glow-red" />
@@ -269,24 +266,14 @@ onMounted(() => void refresh())
         :agent="filesDrawerAgent"
         :profile="filesDrawerProfile"
       />
-    </div>
-  </div>
+  </DashboardPageShell>
 </template>
 
 <style scoped>
-.rs-page {
-  flex: 1;
-  width: 100%;
-  max-width: var(--rs-content-max);
-  margin: 0 auto;
-  padding: 1.5rem var(--rs-page-px) 3rem;
+:deep(.rs-page) {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
-}
-
-@media (min-width: 640px) {
-  .rs-page { padding-top: 2rem; }
 }
 
 /* ── Shell wrapper ── */

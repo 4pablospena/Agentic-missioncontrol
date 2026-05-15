@@ -4,10 +4,11 @@ Quick pass before a release or large UI change. Not automated; run in the browse
 
 ## Layout and sidebar
 
-- Desktop: primary sidebar stays visible; nav highlights match the current route.
-- Mobile (~375px): open the drawer from the top bar menu or the in-page menu control; **Escape** closes it; backdrop tap closes. Optional: use **Saltar al contenido** (skip link) to focus the main region.
-- Resize behavior: main content uses `min-h-0` / overflow chains so panels scroll inside the shell.
-- **Command palette (⌘K)** is not mounted in this app shell (no `UDashboardSearch`). Use sidebar navigation, in-page search (Memory, Workspace, Logs), and direct URLs for internal routes.
+- Desktop: sidebar con secciones (Principal, Observabilidad, Herramientas); el ítem activo coincide con la ruta.
+- Mobile (~375px): abrir el menú desde la barra superior; **Escape** cierra el drawer; tocar el fondo cierra. Probar **Saltar al contenido**.
+- Todas las páginas autenticadas usan `DashboardPageShell` (cabecera retro + cuerpo con scroll).
+- Navegación completa sin URL manual: Chat, Monitorización, Registros, Memoria, Programador (+ Workspace/Office/Diagnostics si están activos).
+- **Command palette (⌘K)** no existe; usar sidebar, búsquedas en página y URLs directas.
 
 ## Breakpoints
 
@@ -24,7 +25,18 @@ Quick pass before a release or large UI change. Not automated; run in the browse
 
 - Toggle light / dark from profile menu: primary contrast readable on buttons and badges (Overview status, login).
 
+## OpenClaw bridge
+
+- **Monitorización** y **Diagnostics**: tarjeta `BridgeConnectionStatus` muestra mock/gateway/error en español; botón Comprobar refresca salud.
+- **Inicio**: no debe aparecer banner de bridge (solo onboarding en español).
+
+## Botones y estados vacíos
+
+- Formularios: `RetroButton` con `type="button"` cuando no hay `to`.
+- `CommonEmptyState` con CTA `onClick`: el botón es `type="button"`.
+- Inicio / Misiones / Agentes: skeletons mientras carga; empty states en español con CTA útiles.
+
 ## Dense pages
 
-- **Monitoring**: section headings read top-to-bottom; cards don’t visually merge.
-- **Memory**: tabs switch without layout jump; long lists scroll inside their region.
+- **Monitorización**: secciones legibles; tarjeta bridge arriba; cards no se fusionan.
+- **Memoria**: pestañas Explorar / Inyectar / Instantáneas sin salto de layout.

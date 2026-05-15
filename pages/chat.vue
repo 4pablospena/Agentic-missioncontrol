@@ -22,7 +22,7 @@ const {
 } = useAgentChat({ events })
 
 const agentMenuItems = computed(() => [
-  { label: 'Select an agent…', value: '' },
+  { label: 'Selecciona un agente…', value: '' },
   ...agents.value.map(a => ({ label: `${a.name} (${a.id})`, value: a.id })),
 ])
 
@@ -42,37 +42,36 @@ async function onRefreshChat() {
 </script>
 
 <template>
-  <UDashboardPanel id="chat">
-    <template #header>
-      <UDashboardNavbar title="Chat" :ui="{ right: 'gap-3' }">
-        <template #leading>
-          <DashboardMobileNavToggle />
-        </template>
-        <template #right>
-          <UButton
-            icon="i-lucide-refresh-cw"
-            label="Refresh"
-            color="neutral"
-            variant="ghost"
-            size="sm"
-            :loading="pending"
-            data-testid="chat-refresh"
-            @click="onRefreshChat"
-          />
-        </template>
-      </UDashboardNavbar>
+  <DashboardPageShell
+    title="Chat"
+    subtitle="Conversaciones con agentes vía bridge OpenClaw"
+    icon="i-lucide-message-square"
+    accent-color="pink"
+  >
+    <template #actions>
+      <RetroButton
+        color="pink"
+        variant="ghost"
+        size="sm"
+        icon="i-lucide-rotate-ccw"
+        :loading="pending"
+        data-testid="chat-refresh"
+        type="button"
+        @click="onRefreshChat"
+      >
+        <span class="hidden sm:inline">Actualizar</span>
+      </RetroButton>
     </template>
 
-    <template #body>
-      <div class="flex flex-col gap-6">
+    <div class="flex flex-col gap-6">
         <UCard>
           <template #header>
             <div class="flex flex-wrap items-center justify-between gap-2">
               <h1 class="text-highlighted font-semibold">
-                Agent chat
+                Chat con agentes
               </h1>
               <UBadge :color="connected ? 'success' : 'neutral'" variant="subtle">
-                Realtime {{ connected ? 'connected' : 'disconnected' }}
+                Tiempo real {{ connected ? 'conectado' : 'desconectado' }}
               </UBadge>
             </div>
           </template>
@@ -81,18 +80,18 @@ async function onRefreshChat() {
             v-if="errorMsg"
             color="error"
             variant="soft"
-            title="Chat error"
+            title="Error de chat"
             :description="errorMsg"
             class="mb-4"
           />
 
-          <UFormField label="Agent" class="max-w-md">
+          <UFormField label="Agente" class="max-w-md">
             <USelectMenu
               v-model="agentId"
               :items="agentMenuItems"
               value-key="value"
               label-key="label"
-              placeholder="Select an agent…"
+              placeholder="Selecciona un agente…"
               :search-input="false"
               class="w-full"
               data-testid="chat-agent-select"
@@ -102,7 +101,7 @@ async function onRefreshChat() {
           <UCollapsible class="mt-3">
             <UButton
               class="group"
-              label="How it works"
+              label="Cómo funciona"
               color="neutral"
               variant="ghost"
               trailing-icon="i-lucide-chevron-down"
@@ -113,20 +112,20 @@ async function onRefreshChat() {
 
             <template #content>
               <p class="text-muted text-sm">
-                Uses the OpenClaw bridge (
+                Usa el bridge OpenClaw (
                 <UKbd size="sm">
                   OPENCLAW_BRIDGE_MODE
                 </UKbd>
-                ). Mock replies include your message and context counts; the gateway path stays a stub until wired.
-                See
+                ). En modo mock las respuestas incluyen tu mensaje y contadores de contexto; el gateway real se activa al configurarlo.
+                Consulta la
                 <ULink
                   to="https://docs.openclaw.ai/"
                   target="_blank"
                   class="text-primary font-medium underline"
                 >
-                  OpenClaw docs
+                  documentación de OpenClaw
                 </ULink>
-                for gateway setup.
+                para el gateway.
               </p>
             </template>
           </UCollapsible>
@@ -143,7 +142,6 @@ async function onRefreshChat() {
           @send="sendMessage"
           @new-conversation="startNewConversation"
         />
-      </div>
-    </template>
-  </UDashboardPanel>
+    </div>
+  </DashboardPageShell>
 </template>

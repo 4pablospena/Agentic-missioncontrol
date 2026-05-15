@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import type { AgentSummary } from '~/models/agent'
-import type { DashboardNavItem } from '~/models/dashboard-shell'
+import type { DashboardNavSection } from '~/config/dashboard-nav'
 
 const props = defineProps<{
   mode: 'desktop' | 'mobile'
-  navItems: DashboardNavItem[]
+  navSections: DashboardNavSection[]
   showAgentRoster: boolean
   agents: readonly AgentSummary[]
   realtimeConnected: boolean
@@ -61,17 +61,22 @@ defineExpose({ focusClose })
       </button>
     </div>
 
-    <nav class="rs-sidebar__nav" aria-label="Principal">
-      <NuxtLink
-        v-for="item in navItems"
-        :key="item.to"
-        :to="item.to"
-        class="rs-nav-item"
-        :class="{ 'rs-nav-item--active': isNavActive(item.to) }"
-      >
-        <UIcon :name="item.icon" class="size-4 shrink-0" />
-        <span>{{ item.label }}</span>
-      </NuxtLink>
+    <nav class="rs-sidebar__nav" aria-label="Navegación">
+      <template v-for="section in navSections" :key="section.id">
+        <p class="rs-sidebar__section-label">
+          {{ section.label }}
+        </p>
+        <NuxtLink
+          v-for="item in section.items"
+          :key="item.to"
+          :to="item.to"
+          class="rs-nav-item"
+          :class="{ 'rs-nav-item--active': isNavActive(item.to) }"
+        >
+          <UIcon :name="item.icon" class="size-4 shrink-0" />
+          <span>{{ item.label }}</span>
+        </NuxtLink>
+      </template>
       <DashboardAgentRoster v-if="showAgentRoster" :agents="agents" />
     </nav>
 
@@ -136,6 +141,22 @@ defineExpose({ focusClose })
   flex-direction: column;
   gap: 0.2rem;
   overflow-y: auto;
+}
+
+.rs-sidebar__section-label {
+  font-family: var(--rs-font-body);
+  font-size: var(--rs-text-2xs);
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--rs-text-dim);
+  padding: 0.65rem 0.7rem 0.25rem;
+  margin-top: 0.35rem;
+}
+
+.rs-sidebar__section-label:first-child {
+  margin-top: 0;
+  padding-top: 0;
 }
 
 .rs-sidebar__footer {

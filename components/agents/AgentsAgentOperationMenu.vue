@@ -1,3 +1,4 @@
+<script setup lang="ts">
 import type { AgentProfile } from '~/config/agent-profiles'
 import type { AgentSummary } from '~/models/agent'
 import { useAgentsAgentOperationMenuState } from '~/composables/useAgentsAgentOperationMenuState'
@@ -23,6 +24,7 @@ const {
   logsHref,
   chatHref,
 } = useAgentsAgentOperationMenuState(toRefs(props))
+</script>
 
 <template>
   <RetroCard :color="cardColor" static class="ag-ops">

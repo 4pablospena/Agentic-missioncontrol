@@ -98,40 +98,41 @@ async function addSampleLog() {
 </script>
 
 <template>
-  <UDashboardPanel id="logs">
-    <template #header>
-      <UDashboardNavbar title="Logs" :ui="{ right: 'gap-3' }">
-        <template #leading>
-          <DashboardMobileNavToggle />
-        </template>
-        <template #right>
-          <UButton
-            icon="i-lucide-plus"
-            label="Sample log"
-            color="neutral"
-            variant="outline"
-            size="sm"
-            :loading="samplePending"
-            @click="addSampleLog"
-          />
-          <UButton
-            icon="i-lucide-refresh-cw"
-            label="Refresh"
-            color="neutral"
-            variant="ghost"
-            size="sm"
-            :loading="pending"
-            @click="refresh"
-          />
-        </template>
-      </UDashboardNavbar>
+  <DashboardPageShell
+    title="Registros"
+    subtitle="Feed estructurado filtrado por metadatos del bridge"
+    icon="i-lucide-scroll-text"
+    accent-color="indigo"
+  >
+    <template #actions>
+      <RetroButton
+        color="indigo"
+        variant="outline"
+        size="sm"
+        icon="i-lucide-plus"
+        :loading="samplePending"
+        type="button"
+        @click="addSampleLog"
+      >
+        <span class="hidden sm:inline">Registro de prueba</span>
+      </RetroButton>
+      <RetroButton
+        color="indigo"
+        variant="ghost"
+        size="sm"
+        icon="i-lucide-rotate-ccw"
+        :loading="pending"
+        type="button"
+        @click="refresh"
+      >
+        <span class="hidden sm:inline">Actualizar</span>
+      </RetroButton>
     </template>
 
-    <template #body>
-      <div class="flex flex-col gap-6">
+    <div class="flex flex-col gap-6">
         <section class="page-toolbar flex flex-wrap items-center justify-between gap-3 pb-2">
           <p class="text-muted text-sm leading-snug">
-            Structured feed filtered by bridge metadata.
+            Los filtros se sincronizan con la URL al aplicar. Las actualizaciones en vivo llegan con eventos log.created.
           </p>
           <UTooltip text="Filters sync to URL on Apply. Realtime updates fire on log.created events.">
             <UButton
@@ -158,14 +159,13 @@ async function addSampleLog() {
             v-if="errorMsg"
             color="error"
             variant="soft"
-            title="Could not load logs"
+            title="No se pudieron cargar los registros"
             :description="errorMsg"
             class="mb-4"
           />
 
           <LogsLogViewer :logs="logs" :pending="pending" />
         </UCard>
-      </div>
-    </template>
-  </UDashboardPanel>
+    </div>
+  </DashboardPageShell>
 </template>

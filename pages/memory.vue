@@ -30,9 +30,9 @@ const snapshotsPending = computed(() => unref(snapshots.pending))
 
 const memoryTab = ref<'explore' | 'inject' | 'snapshots'>('explore')
 const tabItems = [
-  { label: 'Explore', value: 'explore', slot: 'explore', icon: 'i-lucide-search' },
-  { label: 'Inject', value: 'inject', slot: 'inject', icon: 'i-lucide-upload' },
-  { label: 'Snapshots', value: 'snapshots', slot: 'snapshots', icon: 'i-lucide-camera' },
+  { label: 'Explorar', value: 'explore', slot: 'explore', icon: 'i-lucide-search' },
+  { label: 'Inyectar', value: 'inject', slot: 'inject', icon: 'i-lucide-upload' },
+  { label: 'Instantáneas', value: 'snapshots', slot: 'snapshots', icon: 'i-lucide-camera' },
 ]
 
 const exportBusy = ref(false)
@@ -68,13 +68,13 @@ async function confirmDelete(close: () => void) {
     return
   try {
     await removeMemory(id)
-    toast.add({ title: 'Memory deleted', color: 'success' })
+    toast.add({ title: 'Memoria eliminada', color: 'success' })
     pendingDeleteId.value = null
     deleteModalOpen.value = false
     close()
   }
   catch {
-    toast.add({ title: 'Delete failed', color: 'error' })
+    toast.add({ title: 'Error al eliminar', color: 'error' })
   }
 }
 
@@ -87,11 +87,11 @@ function cancelDelete(close: () => void) {
 async function onInject(payload: { agentId: string, content: string, sessionId?: string }) {
   try {
     await injectMemory(payload)
-    toast.add({ title: 'Memory injected', color: 'success' })
+    toast.add({ title: 'Memoria inyectada', color: 'success' })
   }
   catch (e: unknown) {
-    const msg = e instanceof Error ? e.message : 'Inject failed'
-    toast.add({ title: 'Inject failed', description: msg, color: 'error' })
+    const msg = e instanceof Error ? e.message : 'Error al inyectar'
+    toast.add({ title: 'Error al inyectar', description: msg, color: 'error' })
   }
 }
 
@@ -103,11 +103,11 @@ async function onExport() {
       from: filters.value.from,
       to: filters.value.to,
     })
-    toast.add({ title: 'Snapshot exported', color: 'success' })
+    toast.add({ title: 'Instantánea exportada', color: 'success' })
   }
   catch {
     toast.add({
-      title: 'Export failed',
+      title: 'Error al exportar',
       description: unref(snapshots.errorMsg) || undefined,
       color: 'error',
     })
@@ -125,15 +125,15 @@ async function onImportRaw(text: string) {
       raw = JSON.parse(text) as unknown
     }
     catch {
-      throw new Error('File is not valid JSON')
+      throw new Error('El archivo no es JSON válido')
     }
     const payload = parseImportSnapshotPayload(raw)
     const r = await snapshots.importSnapshot(payload)
-    toast.add({ title: `Imported ${r.imported} items`, color: 'success' })
+    toast.add({ title: `Importados ${r.imported} elementos`, color: 'success' })
   }
   catch (e: unknown) {
-    const msg = e instanceof Error ? e.message : 'Import failed'
-    toast.add({ title: 'Import failed', description: msg, color: 'error' })
+    const msg = e instanceof Error ? e.message : 'Error al importar'
+    toast.add({ title: 'Error al importar', description: msg, color: 'error' })
   }
   finally {
     importBusy.value = false
@@ -147,10 +147,10 @@ function truncateId(id: string) {
 async function copySnapshotId(id: string) {
   try {
     await navigator.clipboard.writeText(id)
-    toast.add({ title: 'Snapshot id copied', color: 'success' })
+    toast.add({ title: 'ID de instantánea copiado', color: 'success' })
   }
   catch {
-    toast.add({ title: 'Could not copy', color: 'error' })
+    toast.add({ title: 'No se pudo copiar', color: 'error' })
   }
 }
 
@@ -165,38 +165,36 @@ async function downloadSnapshotJson(id: string) {
     a.download = `memory-snapshot-${id.slice(0, 8)}.json`
     a.click()
     URL.revokeObjectURL(url)
-    toast.add({ title: 'Snapshot downloaded', color: 'success' })
+    toast.add({ title: 'Instantánea descargada', color: 'success' })
   }
   catch {
-    toast.add({ title: 'Download failed', color: 'error' })
+    toast.add({ title: 'Error al descargar', color: 'error' })
   }
 }
 </script>
 
 <template>
-  <UDashboardPanel id="memory">
-    <template #header>
-      <UDashboardNavbar title="Memory" :ui="{ right: 'gap-3' }">
-        <template #leading>
-          <DashboardMobileNavToggle />
-        </template>
-        <template #right>
-          <UButton
-            icon="i-lucide-refresh-cw"
-            label="Refresh"
-            color="neutral"
-            variant="ghost"
-            size="sm"
-            :loading="pending || snapshotsPending"
-            data-testid="memory-refresh"
-            @click="onRefreshMemory"
-          />
-        </template>
-      </UDashboardNavbar>
+  <DashboardPageShell
+    title="Memoria"
+    subtitle="Explorar, inyectar y exportar recuerdos del agente"
+    icon="i-lucide-brain"
+    accent-color="purple"
+  >
+    <template #actions>
+      <RetroButton
+        color="purple"
+        variant="outline"
+        size="sm"
+        icon="i-lucide-rotate-ccw"
+        :loading="pending || snapshotsPending"
+        data-testid="memory-refresh"
+        @click="onRefreshMemory"
+      >
+        <span class="hidden sm:inline">Actualizar</span>
+      </RetroButton>
     </template>
 
-    <template #body>
-      <div class="flex flex-col gap-8">
+    <div class="flex flex-col gap-8">
         <MemoryPageIntro />
 
         <UCard class="panel-shell rounded-xl" :ui="{ body: 'p-4 sm:p-5' }">
@@ -204,7 +202,7 @@ async function downloadSnapshotJson(id: string) {
             v-if="errorMsg"
             color="error"
             variant="soft"
-            title="Memory error"
+            title="Error de memoria"
             :description="errorMsg"
             class="mb-4"
           />
@@ -224,7 +222,7 @@ async function downloadSnapshotJson(id: string) {
                 <div class="grid gap-6 xl:grid-cols-2">
                   <div>
                     <h2 class="text-muted mb-3 text-xs font-semibold uppercase tracking-wide">
-                      Semantic hits
+                      Coincidencias semánticas
                     </h2>
                     <div class="flex flex-col gap-3">
                       <MemoryResultCard
@@ -237,16 +235,16 @@ async function downloadSnapshotJson(id: string) {
                       />
                       <CommonEmptyState
                         v-if="!searchResults.length"
-                        title="No semantic hits yet."
-                        description="Run a search to rank memories by cosine similarity (cap: server max scan)."
+                        title="Sin coincidencias semánticas"
+                        description="Ejecuta una búsqueda para ordenar memorias por similitud (límite del servidor)."
                         icon="i-lucide-sparkles"
-                        :cta="{ label: 'Run semantic search', icon: 'i-lucide-search', onClick: runSemanticSearch }"
+                        :cta="{ label: 'Buscar', icon: 'i-lucide-search', onClick: runSemanticSearch }"
                       />
                     </div>
                   </div>
                   <div>
                     <h2 class="text-muted mb-3 text-xs font-semibold uppercase tracking-wide">
-                      Recent items
+                      Elementos recientes
                     </h2>
                     <div class="flex flex-col gap-3">
                       <MemoryResultCard
@@ -258,10 +256,10 @@ async function downloadSnapshotJson(id: string) {
                       />
                       <CommonEmptyState
                         v-if="!items.length"
-                        title="No memory rows yet."
-                        description="Inject manual memory or enable chat → memory indexing."
+                        title="Sin filas de memoria"
+                        description="Inyecta memoria manualmente o activa la indexación desde el chat."
                         icon="i-lucide-inbox"
-                        :cta="{ label: 'Go to Inject', icon: 'i-lucide-upload', onClick: () => { memoryTab = 'inject' } }"
+                        :cta="{ label: 'Ir a Inyectar', icon: 'i-lucide-upload', onClick: () => { memoryTab = 'inject' } }"
                       />
                     </div>
                   </div>
@@ -289,7 +287,7 @@ async function downloadSnapshotJson(id: string) {
 
                 <UCard>
                   <template #header>
-                    <span class="text-highlighted font-semibold">Snapshot history</span>
+                    <span class="text-highlighted font-semibold">Historial de instantáneas</span>
                   </template>
                   <ul class="divide-default divide-y">
                     <li
@@ -310,7 +308,7 @@ async function downloadSnapshotJson(id: string) {
                       <div class="flex shrink-0 flex-wrap gap-2">
                         <UButton
                           icon="i-lucide-copy"
-                          label="Copy id"
+                          label="Copiar ID"
                           color="neutral"
                           variant="ghost"
                           size="xs"
@@ -318,7 +316,7 @@ async function downloadSnapshotJson(id: string) {
                         />
                         <UButton
                           icon="i-lucide-download"
-                          label="Download JSON"
+                          label="Descargar JSON"
                           color="neutral"
                           variant="soft"
                           size="xs"
@@ -328,8 +326,8 @@ async function downloadSnapshotJson(id: string) {
                     </li>
                     <li v-if="!snapshots.snapshots.length" class="py-8">
                       <CommonEmptyState
-                        title="No exports yet."
-                        description="Export from current filters on this tab."
+                        title="Sin exportaciones"
+                        description="Exporta desde los filtros actuales en esta pestaña."
                         icon="i-lucide-camera-off"
                         variant="compact"
                       />
@@ -343,18 +341,17 @@ async function downloadSnapshotJson(id: string) {
 
         <UModal
           v-model:open="deleteModalOpen"
-          title="Delete memory?"
-          description="This removes the row from the index. This cannot be undone."
-          aria-label="Delete memory confirmation"
+          title="¿Eliminar memoria?"
+          description="Se quitará la fila del índice. Esta acción no se puede deshacer."
+          aria-label="Confirmar eliminación de memoria"
         >
           <template #footer="{ close }">
             <div class="flex w-full justify-end gap-2">
-              <UButton label="Cancel" color="neutral" variant="ghost" @click="cancelDelete(close)" />
-              <UButton label="Delete" color="error" @click="confirmDelete(close)" />
+              <UButton label="Cancelar" color="neutral" variant="ghost" @click="cancelDelete(close)" />
+              <UButton label="Eliminar" color="error" @click="confirmDelete(close)" />
             </div>
           </template>
         </UModal>
-      </div>
-    </template>
-  </UDashboardPanel>
+    </div>
+  </DashboardPageShell>
 </template>

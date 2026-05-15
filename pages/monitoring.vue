@@ -57,54 +57,53 @@ onMounted(() => {
 </script>
 
 <template>
-  <UDashboardPanel id="monitoring">
-    <template #header>
-      <UDashboardNavbar title="Monitoring" :ui="{ right: 'gap-2' }">
-        <template #leading>
-          <DashboardMobileNavToggle />
-        </template>
-        <template #right>
-          <UButton
-            icon="i-lucide-refresh-cw"
-            label="Refresh"
-            color="neutral"
-            variant="outline"
-            size="sm"
-            :loading="isLoading || metricsPending || alertsPending"
-            @click="refreshAll"
-          />
-        </template>
-      </UDashboardNavbar>
+  <DashboardPageShell
+    title="Monitorización"
+    subtitle="Métricas, alertas y actividad del bridge OpenClaw"
+    icon="i-lucide-activity"
+    accent-color="cyan"
+  >
+    <template #actions>
+      <RetroButton
+        color="cyan"
+        variant="outline"
+        size="sm"
+        icon="i-lucide-rotate-ccw"
+        :loading="isLoading || metricsPending || alertsPending"
+        @click="refreshAll"
+      >
+        <span class="hidden sm:inline">Actualizar</span>
+      </RetroButton>
     </template>
 
-    <template #body>
-      <div class="flex flex-col gap-8">
-        <MetricsMonitoringPageIntro />
+    <div class="flex flex-col gap-8">
+      <DashboardBridgeConnectionStatus class="max-w-2xl" accent-color="cyan" />
+      <MetricsMonitoringPageIntro />
 
         <section aria-labelledby="monitoring-metrics-heading">
           <h2 id="monitoring-metrics-heading" class="text-muted mb-3 text-xs font-semibold uppercase tracking-wide">
-            Snapshot metrics
+            Métricas instantáneas
           </h2>
           <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <MetricsMetricCard
-            title="Agents"
+            title="Agentes"
             :value="agents.length"
-            description="From OpenClaw bridge"
+            description="Desde el bridge OpenClaw"
           />
           <MetricsMetricCard
-            title="Total tokens"
+            title="Tokens totales"
             :value="tokens?.total ?? '—'"
-            description="Sum across listed agents"
+            description="Suma de agentes listados"
           />
           <MetricsMetricCard
-            title="Open alerts"
+            title="Alertas abiertas"
             :value="alerts.filter(a => !a.acknowledged).length"
-            description="Unacknowledged"
+            description="Sin reconocer"
           />
           <MetricsMetricCard
-            title="Recent logs"
+            title="Registros recientes"
             :value="recentLogs.length"
-            description="Last 12 rows"
+            description="Últimas 12 filas"
           />
           </div>
         </section>
@@ -331,7 +330,7 @@ onMounted(() => {
               </div>
               <UButton
                 to="/logs"
-                label="Open logs"
+                label="Abrir registros"
                 color="neutral"
                 variant="ghost"
                 size="xs"
@@ -343,7 +342,6 @@ onMounted(() => {
           <LogsLogViewer compact layout="timeline" :logs="recentLogs" :pending="logsPending" />
         </UCard>
         </section>
-      </div>
-    </template>
-  </UDashboardPanel>
+    </div>
+  </DashboardPageShell>
 </template>

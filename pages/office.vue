@@ -16,47 +16,46 @@ onMounted(() => {
 </script>
 
 <template>
-  <UDashboardPanel id="office">
-    <template #header>
-      <UDashboardNavbar title="Office 3D">
-        <template #leading>
-          <DashboardMobileNavToggle />
-        </template>
-      </UDashboardNavbar>
-    </template>
-    <template #body>
+  <DashboardPageShell
+    title="Office 3D"
+    subtitle="Centro de mando 3D experimental por agente"
+    icon="i-lucide-box"
+    accent-color="purple"
+  >
       <CommonEmptyState
         v-if="!officeEnabled"
-        title="Office 3D disabled"
-        description="Enable NUXT_PUBLIC_OFFICE3D_ENABLED=true to expose the experimental office scene."
+        title="Office 3D desactivado"
+        description="Activa NUXT_PUBLIC_OFFICE3D_ENABLED=true para mostrar la escena experimental."
         icon="i-lucide-cuboid"
         tone="warning"
       />
       <div v-else class="flex flex-col gap-4">
-        <UiHudPanel title="Bridge View" subtitle="Live office map and command shortcuts">
+        <UiHudPanel title="Vista bridge" subtitle="Mapa de oficina en vivo y accesos rápidos">
           <div class="flex items-center justify-between gap-3">
             <p class="text-highlighted text-sm font-semibold">
-              OpenClaw office operations
+              Operaciones de oficina OpenClaw
             </p>
-            <UButton
-              icon="i-lucide-refresh-cw"
-              label="Refresh agents"
-              color="neutral"
+            <RetroButton
+              color="purple"
               variant="outline"
               size="sm"
+              icon="i-lucide-rotate-ccw"
               :loading="isLoading"
+              type="button"
               @click="refresh"
-            />
+            >
+              Actualizar agentes
+            </RetroButton>
           </div>
           <p class="text-muted mt-2 text-sm">
-            3D command center with desks per agent, live status avatars and navigation hotspots.
+            Centro 3D con escritorios por agente, avatares de estado y puntos de navegación.
           </p>
         </UiHudPanel>
 
         <CommonEmptyState
           v-if="!webglSupported || forceFallback"
-          title="WebGL not available"
-          description="Fallback mode active. Open this route in a WebGL-capable browser for the full 3D scene."
+          title="WebGL no disponible"
+          description="Modo alternativo activo. Abre esta ruta en un navegador con WebGL para la escena completa."
           icon="i-lucide-monitor-off"
           tone="warning"
         />
@@ -70,10 +69,9 @@ onMounted(() => {
           </template>
         </ClientOnly>
 
-        <UiHudPanel title="Hotspots" subtitle="Fast routes to tactical modules">
+        <UiHudPanel title="Hotspots" subtitle="Rutas rápidas a módulos tácticos">
           <Office3dOfficeHotspots />
         </UiHudPanel>
       </div>
-    </template>
-  </UDashboardPanel>
+  </DashboardPageShell>
 </template>

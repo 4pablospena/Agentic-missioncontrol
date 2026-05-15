@@ -49,32 +49,33 @@ function onSearchInput(q: string) {
 </script>
 
 <template>
-  <UDashboardPanel id="workspace">
-    <template #header>
-      <UDashboardNavbar title="Workspace" :ui="{ right: 'gap-2' }">
-        <template #leading>
-          <DashboardMobileNavToggle />
-        </template>
-        <template #right>
-          <UButton
-            v-if="enabled"
-            icon="i-lucide-refresh-cw"
-            label="Refresh"
-            color="neutral"
-            variant="outline"
-            size="sm"
-            :loading="treeLoading"
-            @click="loadDirectory('')"
-          />
-        </template>
-      </UDashboardNavbar>
+  <DashboardPageShell
+    title="Workspace"
+    subtitle="Explorador de solo lectura del directorio configurado"
+    icon="i-lucide-folder-tree"
+    accent-color="green"
+    :scroll-body="false"
+    body-class="workspace-page-body"
+  >
+    <template #actions>
+      <RetroButton
+        v-if="enabled"
+        color="green"
+        variant="outline"
+        size="sm"
+        icon="i-lucide-rotate-ccw"
+        :loading="treeLoading"
+        type="button"
+        @click="loadDirectory('')"
+      >
+        <span class="hidden sm:inline">Actualizar</span>
+      </RetroButton>
     </template>
 
-    <template #body>
       <CommonEmptyState
         v-if="!enabled"
-        title="Workspace browser disabled"
-        description="Set NUXT_WORKSPACE_ROOT to an absolute path to enable a read-only filesystem browser and global file search for authenticated operators."
+        title="Workspace desactivado"
+        description="Define NUXT_WORKSPACE_ROOT con una ruta absoluta para habilitar el explorador de archivos y la búsqueda global."
         icon="i-lucide-folder-lock"
         tone="warning"
       />
@@ -82,7 +83,7 @@ function onSearchInput(q: string) {
       <div v-else class="flex h-full min-h-0 flex-col gap-4">
         <section class="page-toolbar pb-2">
           <p class="text-muted text-sm leading-snug">
-            Read-only browser of the configured workspace root. Search runs in pure JS over allowlisted text files.
+            Explorador de solo lectura de la raíz configurada. La búsqueda recorre en el cliente los archivos de texto permitidos.
           </p>
         </section>
 
@@ -128,6 +129,15 @@ function onSearchInput(q: string) {
           </div>
         </section>
       </div>
-    </template>
-  </UDashboardPanel>
+  </DashboardPageShell>
 </template>
+
+<style scoped>
+:deep(.workspace-page-body) {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+</style>

@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import type { CreateTaskPayload } from '~/models/task'
-import type { DashboardNavItem } from '~/models/dashboard-shell'
 
 const route = useRoute()
 
@@ -33,11 +32,7 @@ function onClearGuidedRestrict() {
   guidedModalRestrictAgentId.value = null
 }
 
-const navItems: DashboardNavItem[] = [
-  { label: 'Inicio', icon: 'i-lucide-home', to: '/' },
-  { label: 'Agentes', icon: 'i-lucide-users', to: '/agents' },
-  { label: 'Misiones', icon: 'i-lucide-list-checks', to: '/tasks' },
-]
+const { sections: navSections } = useDashboardNav()
 
 const showAgentRoster = computed(() => route.path.startsWith('/agents'))
 
@@ -98,7 +93,7 @@ onUnmounted(() => {
 
     <DashboardAppSidebar
       mode="desktop"
-      :nav-items="navItems"
+      :nav-sections="navSections"
       :show-agent-roster="showAgentRoster"
       :agents="agents"
       :realtime-connected="realtimeConnected"
@@ -128,7 +123,7 @@ onUnmounted(() => {
         v-if="mobileOpen"
         ref="mobileSidebarRef"
         mode="mobile"
-        :nav-items="navItems"
+        :nav-sections="navSections"
         :show-agent-roster="showAgentRoster"
         :agents="agents"
         :realtime-connected="realtimeConnected"

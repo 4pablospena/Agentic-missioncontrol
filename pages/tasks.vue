@@ -50,12 +50,14 @@ const detailOpen = computed({
 </script>
 
 <template>
-  <div class="rs-canvas rs-scanlines flex flex-col h-full overflow-hidden">
-    <RetroPageHeader
+  <div class="rs-canvas rs-scanlines flex flex-col h-full min-h-0 overflow-hidden">
+    <DashboardPageShell
       title="Misiones"
       subtitle="Cola de tareas activa"
       icon="i-lucide-list-checks"
       accent-color="cyan"
+      :scroll-body="false"
+      body-class="tasks-page-body"
     >
       <template #actions>
         <RetroBadge
@@ -94,9 +96,7 @@ const detailOpen = computed({
           <span class="hidden sm:inline">Nueva orden</span>
         </RetroButton>
       </template>
-    </RetroPageHeader>
 
-    <div class="rs-page">
       <RetroCard v-if="errorMsg" color="red" static class="px-4 py-3">
         <div class="flex items-center gap-3">
           <UIcon name="i-lucide-triangle-alert" class="size-5 shrink-0 rs-glow-red" />
@@ -111,7 +111,7 @@ const detailOpen = computed({
         @retry="onRetry"
         @cancel="onCancel"
       />
-    </div>
+    </DashboardPageShell>
 
     <USlideover
       v-model:open="detailOpen"
@@ -141,19 +141,11 @@ const detailOpen = computed({
 </template>
 
 <style scoped>
-.rs-page {
+:deep(.tasks-page-body) {
   flex: 1;
-  width: 100%;
-  max-width: var(--rs-content-max);
-  margin: 0 auto;
-  padding: 1.5rem var(--rs-page-px) 3rem;
   overflow: auto;
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
-}
-
-@media (min-width: 640px) {
-  .rs-page { padding-top: 2rem; }
 }
 </style>

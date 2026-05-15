@@ -20,20 +20,16 @@ const {
 </script>
 
 <template>
-  <UDashboardPanel id="account">
-    <template #header>
-      <UDashboardNavbar title="Account">
-        <template #leading>
-          <DashboardMobileNavToggle />
-        </template>
-      </UDashboardNavbar>
-    </template>
-
-    <template #body>
-      <div class="flex flex-col gap-6">
+  <DashboardPageShell
+    title="Cuenta"
+    subtitle="Perfil del operador y sesión actual"
+    icon="i-lucide-user-circle"
+    accent-color="indigo"
+  >
+    <div class="flex flex-col gap-6">
         <section class="page-toolbar pb-2">
           <p class="text-muted text-sm leading-snug">
-            Your operator profile and current session.
+            Tu perfil de operador y la sesión activa en Mission Control.
           </p>
         </section>
 
@@ -43,10 +39,10 @@ const {
 
         <CommonEmptyState
           v-if="!user"
-          title="No active session."
-          description="You appear to be signed out. Log in to see your account."
+          title="Sin sesión activa"
+          description="Parece que no has iniciado sesión. Entra para ver tu cuenta."
           icon="i-lucide-user-x"
-          :cta="{ label: 'Go to login', to: '/login', icon: 'i-lucide-log-in' }"
+          :cta="{ label: 'Ir al inicio de sesión', to: '/login', icon: 'i-lucide-log-in' }"
         />
 
         <template v-else>
@@ -70,7 +66,7 @@ const {
                   type="button"
                   class="block rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-default disabled:cursor-not-allowed"
                   :disabled="uploadingAvatar"
-                  aria-label="Change profile photo"
+                  aria-label="Cambiar foto de perfil"
                   @click="pickAvatarFile"
                 >
                   <UAvatar
@@ -88,12 +84,12 @@ const {
                       :class="['text-highlighted size-5', { 'animate-spin': uploadingAvatar }]"
                     />
                     <span class="text-highlighted text-[0.7rem] font-medium leading-tight">
-                      {{ uploadingAvatar ? 'Uploading…' : 'Change photo' }}
+                      {{ uploadingAvatar ? 'Subiendo…' : 'Cambiar foto' }}
                     </span>
                   </span>
                 </button>
 
-                <UTooltip v-if="hasUploadedAvatar" text="Remove uploaded photo">
+                <UTooltip v-if="hasUploadedAvatar" text="Quitar foto subida">
                   <UButton
                     type="button"
                     icon="i-lucide-trash-2"
@@ -104,7 +100,7 @@ const {
                     class="absolute -bottom-1 -right-1 opacity-0 shadow-md transition-opacity group-hover:opacity-100 group-focus-within:opacity-100"
                     :loading="uploadingAvatar"
                     :disabled="uploadingAvatar || savingProfile"
-                    aria-label="Remove uploaded photo"
+                    aria-label="Quitar foto subida"
                     @click.stop="clearUploadedAvatar"
                   />
                 </UTooltip>
@@ -122,14 +118,14 @@ const {
 
                 <div v-if="display.email" class="flex flex-wrap items-center gap-2">
                   <span class="text-muted font-mono text-sm">{{ display.email }}</span>
-                  <UTooltip text="Copy email">
+                  <UTooltip text="Copiar correo">
                     <UButton
                       icon="i-lucide-copy"
                       color="neutral"
                       variant="ghost"
                       size="xs"
                       square
-                      aria-label="Copy email to clipboard"
+                      aria-label="Copiar correo al portapapeles"
                       @click="copyEmail"
                     />
                   </UTooltip>
@@ -139,7 +135,7 @@ const {
                   <UTooltip :text="lastLoginLabel ?? ''">
                     <UBadge color="neutral" variant="subtle" size="sm" class="gap-1">
                       <UIcon name="i-lucide-clock" class="size-3.5" />
-                      Last login {{ relativeLastLogin }}
+                      Último acceso {{ relativeLastLogin }}
                     </UBadge>
                   </UTooltip>
                 </div>
@@ -154,26 +150,26 @@ const {
             >
               <template #header>
                 <h3 class="text-highlighted font-semibold">
-                  Profile
+                  Perfil
                 </h3>
               </template>
               <form class="flex flex-col gap-4" @submit.prevent="saveProfile">
-                <UFormField label="Name" class="min-w-0 w-full">
+                <UFormField label="Nombre" class="min-w-0 w-full">
                   <UInput
                     v-model="draftName"
                     autocomplete="name"
                     maxlength="120"
-                    placeholder="Your display name"
+                    placeholder="Tu nombre visible"
                     class="w-full"
                   />
                 </UFormField>
                 <p class="text-muted text-xs leading-snug">
-                  Profile photo: hover the avatar above to change or remove it. JPEG, PNG or WebP up to 2 MB.
+                  Foto: pasa el cursor sobre el avatar para cambiarla o quitarla. JPEG, PNG o WebP hasta 2 MB.
                 </p>
                 <div class="flex justify-end">
                   <UButton
                     type="submit"
-                    label="Save"
+                    label="Guardar"
                     icon="i-lucide-save"
                     :loading="savingProfile"
                     :disabled="savingProfile || uploadingAvatar || !draftName.trim()"
@@ -188,13 +184,13 @@ const {
             >
               <template #header>
                 <h3 class="text-highlighted font-semibold">
-                  Session
+                  Sesión
                 </h3>
               </template>
               <dl class="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
                 <div>
                   <dt class="text-muted text-xs font-medium uppercase tracking-wide">
-                    Last login
+                    Último acceso
                   </dt>
                   <dd class="text-highlighted mt-1 text-sm">
                     {{ lastLoginLabel ?? '—' }}
@@ -202,7 +198,7 @@ const {
                 </div>
                 <div>
                   <dt class="text-muted text-xs font-medium uppercase tracking-wide">
-                    User id
+                    ID de usuario
                   </dt>
                   <dd class="text-highlighted mt-1 font-mono text-sm">
                     {{ user.id }}
@@ -212,9 +208,8 @@ const {
             </UCard>
           </div>
         </template>
-      </div>
-    </template>
-  </UDashboardPanel>
+    </div>
+  </DashboardPageShell>
 </template>
 
 <style scoped>
